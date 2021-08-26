@@ -1,37 +1,47 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from "react";
+import logo from "./logo.svg";
+import "./App.css";
+import Menu from './components/Menu';
+import About from './components/About';
+import {BrowserRouter as Router,Switch,Route} from "react-router-dom";
 
 class App extends Component {
-state = {
-    data: null
+  state = {
+    data: null,
+    url: window.location.pathname,
   };
 
-  componentDidMount() {
-    this.callBackendAPI()
-      .then(res => this.setState({ data: res.express }))
-      .catch(err => console.log(err));
+  async componentDidMount() {
+    try {
+      const res = await this.callBackendAPI();
+      this.setState({ data: res.express });
+    } catch (err) {
+      console.log("error");
+    }
   }
-    // fetching the GET route from the Express server which matches the GET route from server.js
+  // fetching the GET route from the Express server which matches the GET route from server.js
   callBackendAPI = async () => {
-    const response = await fetch('/express_backend');
+
+    const response = await fetch(this.state.url);
+
     const body = await response.json();
 
     if (response.status !== 200) {
-      throw Error(body.message) 
+      throw Error(body.message);
     }
     return body;
   };
 
   render() {
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
-        <p className="App-intro">{this.state.data}</p>
-      </div>
+      <Router>
+
+      <Switch>
+      <Route path='/menu'> <Menu /> </Route>
+      <Route path='/aboutus'> <About /> </Route>
+      </Switch>
+
+      </Router>
     );
   }
 }
