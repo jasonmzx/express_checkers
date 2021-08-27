@@ -10,7 +10,7 @@ const mongoClient = mongo.client
 // This displays message that the server running and listening to specified port
 const expressServer = app.listen(port, () => console.log(`Listening on port ${port}`));
 
-const mongotest = async (message) => {
+const mongoCreateRoom = async (message) => {
     await mongoClient.connect();
     const db = mongoClient.db('checker_db');
     const collection = db.collection('rooms');
@@ -27,11 +27,17 @@ wsServer.on('connection', socket => {
     socket.sess_id = uuid.v4();
 
 
-  socket.on('message', async (message) => {
-    socket.send(await mongotest(message)); 
+  socket.on('message', async (data) => {
+    // socket.send(await mongotest(message)); 
+    const parsedData = JSON.parse(data.toString());
+
+
     console.log(socket.sess_id); 
-    console.log(message.toString()); } );
+    console.log(parsedData); 
+  });
 });
+
+
 
 // create a GET route
 app.get('/aboutUs', (req, res) => { 

@@ -10,7 +10,8 @@ export default class Menu extends Component {
         return (
             <div>
                 <p>This is the menu</p>
-                <Link to="/aboutus">About</Link>
+                <Link to="/aboutus">About</Link><br></br>
+                <Link to="/createroom">CreateRoom</Link>
             </div>
         )
     }

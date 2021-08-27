@@ -3,6 +3,8 @@ import logo from "./logo.svg";
 import "./App.css";
 import Menu from './components/Menu';
 import About from './components/About';
+import CreateRoom from "./components/CreateRoom";
+import GameRoom from "./components/GameRoom";
 import {BrowserRouter as Router,Switch,Route} from "react-router-dom";
 
 class App extends Component {
@@ -39,6 +41,8 @@ class App extends Component {
       <Switch>
       <Route path='/menu'> <Menu /> </Route>
       <Route path='/aboutus'> <About /> </Route>
+      <Route path='/createroom'> <CreateRoom /> </Route>
+      <Route path='/game'> <GameRoom /> </Route>
       </Switch>
 
       </Router>
