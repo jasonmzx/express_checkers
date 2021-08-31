@@ -2,8 +2,18 @@ import React, { Component } from 'react'
 import {Link,BrowserRouter as Router,} from "react-router-dom";
 
 export default class CreateRoom extends Component {
+
+    id_generator = () => {
+        const chars = 'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        let ret = ''
+        for (let i = 0; i < 5; i++) {
+            ret += chars[Math.round(Math.random()*62)]
+          }
+        return ret
+    }
+
     state = {
-        room_id : Math.floor(Math.random()*10000)
+        room_id : this.id_generator()
     };
 
 

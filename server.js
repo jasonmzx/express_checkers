@@ -18,11 +18,21 @@ const express_session = session({
     saveUninitialized: false
   });
 
+const mongoDBsearch = async (query) => {
+  await mongoClient.connect();
+  const db = mongoClient.db('checker_db');
+  //Search query:
+  const collection = db.collection(query[0]);
+  const query_result = await collection.find(query[1]).toArray();
+  return query_result
+  
+}
 
 
-const mongoDB = async (data) => {
+const mongoDBinsert = async (data) => {
     await mongoClient.connect();
     const db = mongoClient.db('checker_db');
+    //Actual insert query:
     const collection = db.collection(data[0]);
     await collection.insertOne(data[1]);
     return 'Db successed!'
@@ -33,7 +43,7 @@ const wsServer = new ws.Server({ noServer: true });
 wsServer.on('connection', (socket,ws_request) => {
     console.log('WS connected');
     express_session(ws_request, {}, () => {
-      console.log(ws_request.sessionID);
+      console.log("Request SessionID: "+ws_request.session.uuid);
     });
 
 
@@ -45,12 +55,12 @@ wsServer.on('connection', (socket,ws_request) => {
     // socket.send(await mongotest(message)); 
     const parsedData = JSON.parse(data.toString());
     if(parsedData.query_type === 'create_room'){
-      mongoDB(
+      mongoDBinsert(
         [ 'rooms', //Collection Name 
         {                                   
           _id : parsedData.room_id, //Insert Data into Collection [0]
           room_name : parsedData.room_name,
-          room_admin: socket.sess_id,
+          room_admin: ws_request.session.uuid,
           room_guest : ''
         }
         ]
@@ -62,7 +72,7 @@ wsServer.on('connection', (socket,ws_request) => {
 
 
 
-    console.log(socket.sess_id); 
+    //console.log(socket.sess_id); 
     console.log(parsedData); 
   });
 });
@@ -71,14 +81,42 @@ wsServer.on('connection', (socket,ws_request) => {
 app.use(express_session);
 
 // create a GET route
+app.get('/game/:roomId',async (req,res) =>{
+
+  //Url Params:
+  let roomId = req.params.roomId;
+
+  //Check if roomId exists:
+  console.log('query results:')
+
+  //Search for roomId's matching the URL param in rooms collection:
+  if( !((await mongoDBsearch(['rooms',{_id: roomId}])).length) ){
+    console.log('room dont exist')
+    res.send({error: `room doesn't exist`});
+  }
+  else {
 
 
-app.get('/aboutUs', (req, res) => { 
+  console.log('/game/'+roomId+' result:')
+  console.log("session uuid: "+req.session.uuid)
+  console.log(await mongoDBsearch(['rooms',{room_admin: req.session.uuid}]));
+  res.send({express: req.session.uuid});
+  }
+});
+
+app.get('/createroom', async (req,res) => {
+  if( !(req.session.uuid) ){
+    req.session.uuid = uuid.v4();
+    console.log('session: '+req.session.uuid+' created @ /createroom')
+  }
+  res.send();
+});
+
+app.get('/aboutus', (req, res) => { 
   res.send({ express: 'YOUR EXPRESS BACKEND IS CONNECTED TO REACT' }); 
 }); 
 
 app.get('/menu', (req,res) => {
-  console.log(req.sessionID);
   console.log('Menu has been reached');
   res.send({express: 'test'})
 });

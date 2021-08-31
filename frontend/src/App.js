@@ -9,14 +9,16 @@ import {BrowserRouter as Router,Switch,Route} from "react-router-dom";
 
 class App extends Component {
   state = {
-    data: null,
+    data: {error: 'loading...'},
     url: window.location.pathname,
   };
 
+  
   async componentDidMount() {
     try {
       const res = await this.callBackendAPI();
-      this.setState({ data: res.express });
+      console.log(res);
+      this.setState({ data: res});
     } catch (err) {
       console.log("error");
     }
@@ -27,6 +29,7 @@ class App extends Component {
     const response = await fetch(this.state.url);
 
     const body = await response.json();
+    console.log(body);
 
     if (response.status !== 200) {
       throw Error(body.message);
@@ -42,7 +45,11 @@ class App extends Component {
       <Route path='/menu'> <Menu /> </Route>
       <Route path='/aboutus'> <About /> </Route>
       <Route path='/createroom'> <CreateRoom /> </Route>
-      <Route path='/game'> <GameRoom /> </Route>
+      <Route 
+        path='/game'  
+        render={(props) => (
+    <GameRoom {...props} backendAPIresp={this.state.data} />)} 
+      />
       </Switch>
 
       </Router>
