@@ -13,29 +13,28 @@ class App extends Component {
     url: window.location.pathname,
   };
 
-  
-  async componentDidMount() {
-    try {
-      const res = await this.callBackendAPI();
-      console.log(res);
-      this.setState({ data: res});
-    } catch (err) {
-      console.log("error");
+  //This will call the session manager
+  componentDidMount = async () => {
+    try{
+        await this.callBackendAPI();
+        console.log('Session loaded!')
+    } catch(err){
+        console.log(err);
     }
-  }
-  // fetching the GET route from the Express server which matches the GET route from server.js
-  callBackendAPI = async () => {
+}
 
-    const response = await fetch(this.state.url);
-
+callBackendAPI = async () => {
+    const response = await fetch('/sessionhandler');
     const body = await response.json();
-    console.log(body);
 
     if (response.status !== 200) {
-      throw Error(body.message);
+      throw Error(body.message) 
     }
     return body;
   };
+
+
+
 
   render() {
     return (
@@ -45,11 +44,7 @@ class App extends Component {
       <Route path='/menu'> <Menu /> </Route>
       <Route path='/aboutus'> <About /> </Route>
       <Route path='/createroom'> <CreateRoom /> </Route>
-      <Route 
-        path='/game'  
-        render={(props) => (
-    <GameRoom {...props} backendAPIresp={this.state.data} />)} 
-      />
+      <Route path='/game'> <GameRoom /></Route>
       </Switch>
 
       </Router>

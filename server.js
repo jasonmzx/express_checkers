@@ -43,7 +43,8 @@ const wsServer = new ws.Server({ noServer: true });
 wsServer.on('connection', (socket,ws_request) => {
     console.log('WS connected');
     express_session(ws_request, {}, () => {
-      console.log("Request SessionID: "+ws_request.session.uuid);
+      console.log('WS SESSION: '+ws_request.session.uuid)
+
     });
 
 
@@ -80,35 +81,45 @@ wsServer.on('connection', (socket,ws_request) => {
 
 app.use(express_session);
 
+app.get('/sessionhandler', async (req,res) => {
+  if( !(req.session.uuid) ){
+    req.session.uuid = uuid.v4();
+    console.log('session: '+req.session.uuid+' created @ /sessionhandler');
+  } else {
+    console.log('session UUID exists @ /sessionhandler')
+  }
+  res.send();
+});
+
 // create a GET route
 app.get('/game/:roomId',async (req,res) =>{
-
   //Url Params:
   let roomId = req.params.roomId;
 
   //Check if roomId exists:
-  console.log('query results:')
 
   //Search for roomId's matching the URL param in rooms collection:
-  if( !((await mongoDBsearch(['rooms',{_id: roomId}])).length) ){
+  const roomData = await mongoDBsearch(['rooms',{_id: roomId}])
+
+  if( !((roomData).length) ){
     console.log('room dont exist')
     res.send({error: `room doesn't exist`});
   }
-  else {
-
-
+  //Check if user is admin on existing room:
+  else if ( !((await mongoDBsearch(['rooms',{_id: roomId,room_admin: req.session.uuid}])).length) ){
+    console.log('Not an admin')
+    if( !(roomData.room_guest)  ){
+      res.send({valid: 'This room is joinable'});
+    } else {
+      res.send({error: `You aren't authorized to join.`})
+    }
+  } else {
   console.log('/game/'+roomId+' result:')
-  console.log("session uuid: "+req.session.uuid)
-  console.log(await mongoDBsearch(['rooms',{room_admin: req.session.uuid}]));
-  res.send({express: req.session.uuid});
+  res.send({valid: 'Welcome, '+req.session.uuid+' , to room '+roomId+'!'});
   }
 });
 
 app.get('/createroom', async (req,res) => {
-  if( !(req.session.uuid) ){
-    req.session.uuid = uuid.v4();
-    console.log('session: '+req.session.uuid+' created @ /createroom')
-  }
   res.send();
 });
 
