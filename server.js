@@ -19,6 +19,20 @@ const express_session = session({
     saveUninitialized: false
   });
 
+
+//ID generator for rooms:
+const id_generator = () => {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let ret = ''
+  for (let i = 0; i < 5; i++) {
+      ret += chars[Math.round(Math.random()*62)]
+    }
+  return ret
+}
+
+
+//MONGODB Queries:
+
 const mongoDBsearch = async (query) => {
   await mongoClient.connect();
   const db = mongoClient.db('checker_db');
@@ -68,18 +82,18 @@ wsServer.on('connection', (socket,ws_request) => {
     // socket.send(await mongotest(message)); 
     const parsedData = JSON.parse(data.toString());
     if(parsedData.query_type === 'create_room'){
-      mongoDBinsert(
-        [ 'rooms', //Collection Name 
-        {                                   
-          _id : parsedData.room_id, //Insert Data into Collection [0]
-          room_name : parsedData.room_name,
-          admin_session: ws_request.session.uuid,
-          guest_session : '',
-        }
-        ]
-      )
+
+      const insertData =  {                                   
+        _id : id_generator(), //Insert Data into Collection [0]
+        room_name : parsedData.room_name,
+        admin_session: ws_request.session.uuid,
+        guest_session : '',
+      }
+
+      mongoDBinsert([ 'rooms', insertData]);
       
-      console.log(socket);
+      console.log(insertData);
+      socket.send(JSON.stringify({'room_url': insertData._id}) );
       console.log('This request is to create a room.')
 
     } else if(parsedData.query_type === 'guest_join'){

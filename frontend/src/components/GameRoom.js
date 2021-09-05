@@ -33,8 +33,8 @@ export default class GameRoom extends Component {
                 
                 }
 
-                socket.onmessage = (data) => {
-                    console.log(data);
+                socket.onmessage = (response) => {
+                    console.log(response);
                 }
 
 

@@ -1,20 +1,11 @@
 import React, { Component } from 'react'
-import {Link,BrowserRouter as Router,} from "react-router-dom";
+import {Link,Redirect, BrowserRouter as Router,} from "react-router-dom";
 
 export default class CreateRoom extends Component {
 
-    id_generator = () => {
-        const chars = 'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        let ret = ''
-        for (let i = 0; i < 5; i++) {
-            ret += chars[Math.round(Math.random()*62)]
-          }
-        return ret
-    }
-
     state = {
-        room_id : this.id_generator()
-    };
+        redirect: null
+    }
 
 
 
@@ -31,18 +22,34 @@ export default class CreateRoom extends Component {
             JSON.stringify({
                 query_type: 'create_room',
                 room_name : this.state.room_input,
-                room_id : this.state.room_id
             })
                 )
+        } 
+        
+        socket.onmessage = (response) => {
+            const respData = JSON.parse(response.data);
+            if(respData.room_url){
+                this.setState({redirect: '/game/'+respData.room_url})
+            }
+            console.log(this.state.redirect);
         }
     }
 
+    renderRedirect = () => {
+        if (this.state.redirect) {
+          return <Redirect to={this.state.redirect} />
+        }
+      }
+
+
+//<Link to={ '/game/'+this.state.room_id} onClick={this.submitHandler}>Submit</Link>
     render() {
         return (
             <div>
+                {this.renderRedirect()}
                   <label for="room_name">room's Name</label>
-                <input type="text" id="room_name" onChange={this.inputHandler}></input>
-                <Link to={ '/game/'+this.state.room_id} onClick={this.submitHandler}>Submit</Link>
+                <input type="text" id="room_name" onChange={this.inputHandler}></input> 
+                <button onClick={this.submitHandler}>submit</button> 
             </div>
         )
     }
