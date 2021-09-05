@@ -1,0 +1,91 @@
+This is a TUTORIAL to show you how to setup a mongodb replica server (used for change stream)
+
+
+(1) Make a "data1" directory in your C: drive:
+with data1:
+
+(2) STOP MONGO ON run -> services.msc (make sure MongoDB app isn't running)
+
+
+data1 dir
+--config dir
+	- mongo.cfg
+		dbpath =C:\data1\db\path
+		logpath = C:\data1\log\mongod.log\
+		port=27020
+
+--db dir
+	leave this empty
+--log dir
+	- mongod.log
+		leave this empty
+
+(3) RUN CMD as ADMIN:
+
+cd C:\Program Files\MongoDB\Server\5.0\bin
+
+mongod --dbpath "C:\Program Files\MongoDB\Server\5.0\data" --logpath "C:\Program Files\MongoDB\Server\5.0\log\mongod.log" --port 27017 --storageEngine=wiredTiger --replSet rep_checkers
+
+mongod --dbpath "C:\Program Files\MongoDB\Server\5.0\data" --logpath "C:\Program Files\MongoDB\Server\5.0\log\mongod.log" --port 27017 --storageEngine=wiredTiger --journal --replSet checkers_db_replica
+
+
+(dont close)
+
+
+(4) RUN CMD as ADMIN;
+
+cd C:\Program Files\MongoDB\Server\5.0\bin
+
+mongo --port 27017
+
+rsconf={_id:"checkers_db_replica",members:[{_id:0,host:"localhost:27017"}]}
+
+rs.initiate(rsconf)
+
+(This should then turn in SECONDARY)
+
+(5) RUN CMD as ADMIN: 
+** Configure SECONDARY SERVER:
+
+cd C:\Program Files\MongoDB\Server\5.0\bin
+
+mongod --dbpath "C:\mongodb_rep\db" --logpath "C:\mongodb_rep\log\mongod.log" --port 27099 --storageEngine=wiredTiger --journal --replSet checkers_db_replica
+
+(6) Switch back to Primary Server (number (4)'s corresponding terminal)
+
+rs.add("localhost:27099") or port if it isn't 27099
+
+rs.status() //to check if all servers are configured properly..
+
+(7) Open secondary server:
+
+cd C:\Program Files\MongoDB\Server\5.0\bin
+
+mongo --port 27099
+
+rs.secondaryOk()
+
+
+TO RESTART:
+
+You need:
+
+
+***RUN PRIMARY SERVER (port: 27017)
+
+MAKE SURE MONGODB is not RUNNING On run -> services.msc
+
+cd C:\Program Files\MongoDB\Server\5.0\bin
+
+mongod --dbpath "C:\Program Files\MongoDB\Server\5.0\data" --logpath "C:\Program Files\MongoDB\Server\5.0\log\mongod.log" --port 27017 --storageEngine=wiredTiger --journal --replSet checkers_db_replica
+
+***RUN SECONDARY SERVER (port: 27099)
+
+cd C:\Program Files\MongoDB\Server\5.0\bin
+
+mongod --dbpath "C:\mongodb_rep\db" --logpath "C:\mongodb_rep\log\mongod.log" --port 27099 --storageEngine=wiredTiger --journal --replSet checkers_db_replica
+
+
+GUIDE BY: yours truly ;) ( jasonmzx )
+
+big credits to r2schools for the youtube tutorial! : https://youtu.be/bJo7nr9xdrQ
