@@ -25,7 +25,7 @@ const id_generator = () => {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   let ret = ''
   for (let i = 0; i < 5; i++) {
-      ret += chars[Math.round(Math.random()*62)]
+      ret += chars[Math.round(Math.random()*61)]
     }
   return ret
 }
@@ -44,13 +44,21 @@ const mongoDBsearch = async (query) => {
 }
 
 
-const mongoDBinsert = async (data) => {
+const mongoDBinsert = async (query) => {
     await mongoClient.connect();
     const db = mongoClient.db('checker_db');
     //Actual insert query:
-    const collection = db.collection(data[0]);
-    await collection.insertOne(data[1]);
+    const collection = db.collection(query[0]);
+    await collection.insertOne(query[1]);
     return 'Db successed!'
+}
+
+const mongoDBremove = async (query) =>{
+    await mongoClient.connect();
+    const db = mongoClient.db('checker_db');
+    
+    const collection = db.collection(query[0]);
+    await collection.deleteOne(query[1]);
 }
 
   //col: Collection to update, 
@@ -72,6 +80,7 @@ const wsServer = new ws.Server({ noServer: true });
 
 wsServer.on('connection', (socket,ws_request) => {
     console.log('WS connected');
+    //Instance of session, add property to socket:
     express_session(ws_request, {}, () => {
       console.log('WS SESSION: '+ws_request.session.uuid)
       socket.sess_id = ws_request.session.uuid
@@ -79,29 +88,33 @@ wsServer.on('connection', (socket,ws_request) => {
     });
 
   socket.on('message', async (data) => {
-    // socket.send(await mongotest(message)); 
+    //ParsedData sent back:
     const parsedData = JSON.parse(data.toString());
-    if(parsedData.query_type === 'create_room'){
 
+    //Create Room:
+    if(parsedData.query_type === 'create_room'){
+      mongoDBremove(['rooms', {admin_session: ws_request.session.uuid}]);
+
+      //Database Entry Structure:
       const insertData =  {                                   
         _id : id_generator(), //Insert Data into Collection [0]
         room_name : parsedData.room_name,
         admin_session: ws_request.session.uuid,
         guest_session : '',
+        game_board: '0202020220202020020202020000000000000000101010100101010110101010'.split('') //8 x 8 Checkers grid (1D array), 0 = Empty spot, 1 = red, 2 = black
       }
 
       mongoDBinsert([ 'rooms', insertData]);
       
       console.log(insertData);
       socket.send(JSON.stringify({'room_url': insertData._id}) );
+      socket.close();
       console.log('This request is to create a room.')
-
-    } else if(parsedData.query_type === 'guest_join'){
+    
+    //Guest first time authentication:
+    } else if(parsedData.query_type === 'guest_fta'){
       const findRoom = await mongoDBsearch(['rooms',{_id: parsedData.room_id}]); //This obj is wrapped in an array, please reference findRoom as findRoom[0]
-      //socket[findRoom[0].room_admin].send('A guest has joined!')
       console.log('GUEST has authenticated')
-      console.log({_id : findRoom[0]._id })
-      console.log({ $set : { guest_session : ws_request.session.uuid } })
       await mongoDBupdate('rooms',{_id : findRoom[0]._id }, { $set : { guest_session : ws_request.session.uuid } }, {upsert: false})
 
       console.log(findRoom);
@@ -134,21 +147,12 @@ const mongoMonitor = async (pipeline) => {
 
       for(const c of wsServer.clients ){
         if(c.sess_id == findRoom[0].admin_session){
-          c.send('test')
+          c.send(JSON.stringify({guest_auth : true, game_board: findRoom[0].game_board}))
         }
       }
 
 
     }
-
-    // for(const c of wsServer.clients ){
-    //   if(c.sess_id){
-    //     console.log(c.sess_id)
-
-    //   }
-    // }
-
-    //wsServer.clients.filter(c => c.sess_id == next.updateDescription.updatedFields.guest_session) ); This doesn't work unfortunately
 
     //console.log(next.documentKey._id) //Room code (5 char randomized)
     //console.log(next.updateDescription.updatedFields.guest_session) //Guest Session Key
@@ -181,26 +185,40 @@ app.get('/game/:roomId',async (req,res) =>{
   //Url Params:
   let roomId = req.params.roomId;
 
-  //Check if roomId exists:
-
   //Search for roomId's matching the URL param in rooms collection:
   const roomData = await mongoDBsearch(['rooms',{_id: roomId}])
   if( !((roomData).length) ){
-    console.log('room dont exist')
     res.send({error: `room doesn't exist`});
   }
-  //Check if user is admin on existing room:
+  //IF NOT ADMIN
+  //
   else if ( !((await mongoDBsearch(['rooms',{_id: roomId,admin_session: req.session.uuid}])).length) ){
     console.log('Not an admin')
     if( !(roomData[0].guest_session)  ){
-      res.send({valid: [{guest:true}] });
+      //First time authentication of a guest, (f_irst t_ime a_uth (fta) is true, so is guest)
+      res.send({valid: {guest:true, fta: true} }); 
       //Update room row
     } else {
-      res.send({error: `You aren't authorized to join.`})
+      if(roomData[0].guest_session == req.session.uuid){
+        console.log('Guest has re-joined');
+        res.send({valid: {guest:true, fta: false}});
+      } else {
+        res.send({error: `You aren't authorized to join.`});
+      }
+
     }
+
+  //IF IS ADMIN
+  //
   } else {
-  console.log('/game/'+roomId+' result:')
-  res.send({valid: [{guest:false}] });
+    console.log('/game/'+roomId+' result:')
+    console.log(roomData[0].guest_session)
+    //If the roomData has a guest_session that isn't '' (false)
+    if(roomData[0].guest_session){
+      res.send({valid: {guest:false,isGuest:true}}); //Tell frontend that guest is here
+    } else{
+      res.send({valid: {guest:false,isGuest:false} }); //Tell frontend that guest isn't here
+    }
   }
 });
 

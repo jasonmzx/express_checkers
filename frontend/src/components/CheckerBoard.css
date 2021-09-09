@@ -1,0 +1,63 @@
+
+
+.tile {
+    width: 5vw;
+    height: 5vw;
+    padding: 0;
+    margin: 0;
+    z-index: 10;    
+    border: black;
+}
+
+.white_tile {
+    width: 5vw;
+    height: 5vw;
+    padding: 0;
+    margin: 0;
+    z-index: 10; 
+    background: url('../graphics/white_tile.png')  no-repeat center center; 
+    background-size: cover;
+    image-rendering: pixelated;
+}
+
+.black_tile {
+    width: 5vw;
+    height: 5vw;
+    padding: 0;
+    margin: 0;
+    z-index: 10;    
+    background-color: black;
+    background: url('../graphics/black_tile.png')  no-repeat center center; 
+    background-size: cover;
+    image-rendering: pixelated;
+}
+
+.pawn{
+    background-color: transparent;
+    position: relative;
+}
+.pawn_img{
+    position: relative;
+}
+
+  div > img {
+    display: block;
+    top: 0%;
+    left: 0%;
+    min-height: 100%;
+    min-width: 100%;
+  }  
+
+  img {
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: pixelated;
+    -ms-interpolation-mode: nearest-neighbor;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: 5vw 5vw 5vw 5vw 5vw 5vw 5vw 5vw;
+    padding: 0;
+
+}
