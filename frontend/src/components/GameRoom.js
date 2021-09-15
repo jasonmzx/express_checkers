@@ -4,7 +4,8 @@ import CheckerBoard from './CheckerBoard';
 
 export default class GameRoom extends Component {
     state = {
-        data : null,
+        userResponseData : null,
+        initReq: 1,
         guest: null,
         g_auth: null,
         gameBoard: null,
@@ -16,12 +17,13 @@ export default class GameRoom extends Component {
             const backendResp = await this.callBackendAPI();
             // If backend Response is an error, simply throw error onto screen (via data state)
             if(backendResp.error){
-                this.setState({data: backendResp.error})
+                this.setState({userResponseData: backendResp.error})
             //If there is no error, 
             } else {
                 this.setState({guest: [backendResp.valid.guest,backendResp.valid.fta] })
-                if(backendResp.valid.isGuest){
-                    this.setState({g_auth : backendResp.valid.isGuest});
+                if(backendResp.valid.gameBoard){
+                    this.setState({gameBoard : backendResp.valid.gameBoard}); //g_auth: Is guest here?
+
                 }
                 //Creation of Websocket connection:
                 const socket = new WebSocket("ws:"+(window.location.href).split(':')[1]+':5000');
@@ -30,13 +32,15 @@ export default class GameRoom extends Component {
                 socket.onopen = () => {
                     console.log(this.state.guest);
                     if( this.state.guest[0] === false ){ //If admin
-                        if(this.state.g_auth){
-                            this.setState({data: `you're opponent is here!`})
+                        if(this.state.gameBoard){
+                            this.setState({userResponseData: `you're opponent is here!`})
                         } else {
-                            this.setState({data: 'Waiting for opponent...'}) 
+
+                            this.setState({userResponseData: 'Waiting for opponent...'}) 
                         }
 
                     } else { //If guest:
+                        this.setState({gameBoard: (this.state.gameBoard).reverse()})
                         if( this.state.guest[1] === true){ //If FTA is true
                             console.log('GUEST FIRST TIME AUTH')
                             socket.send(JSON.stringify({
@@ -45,7 +49,7 @@ export default class GameRoom extends Component {
                             })) 
                             this.setState({guest: [this.state.guest[0], false] })
                         } else {
-                            this.setState({data: 'Welcome back, guest'})
+                            this.setState({userResponseData: 'Welcome back, guest'})
                         }
                     }
                 
@@ -57,7 +61,7 @@ export default class GameRoom extends Component {
 
                     if(this.state.guest[0] === false){ //If admin:
                         if(respData.guest_auth === true){
-                            this.setState({data: 'Guest has arrived!', gameBoard: respData.game_board});
+                            this.setState({userResponseData: 'Guest has arrived!', gameBoard: respData.game_board});
                         }    
                     } else { //If guest:
 
@@ -96,7 +100,7 @@ export default class GameRoom extends Component {
         return (
             <div>
                 {this.renderBoard()}
-                Welcome to your game! {this.state.data}
+                Welcome to your game! {this.state.userResponseData}
 
             </div>
         )

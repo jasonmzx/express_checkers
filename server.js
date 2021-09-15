@@ -38,8 +38,8 @@ const mongoDBsearch = async (query) => {
   const db = mongoClient.db('checker_db');
   //Search query:
   const collection = db.collection(query[0]);
-  const query_result = await collection.find(query[1]).toArray();
-  return query_result
+  // const query_result = await collection.find(query[1]).toArray();
+  return await collection.find(query[1]).toArray();
   
 }
 
@@ -104,7 +104,7 @@ wsServer.on('connection', (socket,ws_request) => {
         game_board: '0202020220202020020202020000000000000000101010100101010110101010'.split('') //8 x 8 Checkers grid (1D array), 0 = Empty spot, 1 = red, 2 = black
       }
 
-      mongoDBinsert([ 'rooms', insertData]);
+      await mongoDBinsert([ 'rooms', insertData]);
       
       console.log(insertData);
       socket.send(JSON.stringify({'room_url': insertData._id}) );
@@ -174,6 +174,7 @@ app.get('/sessionhandler', async (req,res) => {
   if( !(req.session.uuid) ){
     req.session.uuid = uuid.v4();
     console.log('session: '+req.session.uuid+' created @ /sessionhandler');
+    console.log('URL: '+req.query.valid)
   } else {
     console.log('session UUID exists @ /sessionhandler')
   }
@@ -187,6 +188,7 @@ app.get('/game/:roomId',async (req,res) =>{
 
   //Search for roomId's matching the URL param in rooms collection:
   const roomData = await mongoDBsearch(['rooms',{_id: roomId}])
+  console.log(`ROOM QUERY! ${roomData[0]}`)
   if( !((roomData).length) ){
     res.send({error: `room doesn't exist`});
   }
@@ -196,12 +198,12 @@ app.get('/game/:roomId',async (req,res) =>{
     console.log('Not an admin')
     if( !(roomData[0].guest_session)  ){
       //First time authentication of a guest, (f_irst t_ime a_uth (fta) is true, so is guest)
-      res.send({valid: {guest:true, fta: true} }); 
+      res.send({valid: {guest:true, fta: true, gameBoard: roomData[0].game_board} }); 
       //Update room row
     } else {
       if(roomData[0].guest_session == req.session.uuid){
         console.log('Guest has re-joined');
-        res.send({valid: {guest:true, fta: false}});
+        res.send({valid: {guest:true, fta: false, gameBoard: roomData[0].game_board}});
       } else {
         res.send({error: `You aren't authorized to join.`});
       }
@@ -215,9 +217,9 @@ app.get('/game/:roomId',async (req,res) =>{
     console.log(roomData[0].guest_session)
     //If the roomData has a guest_session that isn't '' (false)
     if(roomData[0].guest_session){
-      res.send({valid: {guest:false,isGuest:true}}); //Tell frontend that guest is here
+      res.send({valid: {guest:false,gameBoard:roomData[0].game_board} }); //Tell frontend that guest is here
     } else{
-      res.send({valid: {guest:false,isGuest:false} }); //Tell frontend that guest isn't here
+      res.send({valid: {guest:false} }); //Tell frontend that guest isn't here
     }
   }
 });
