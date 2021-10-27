@@ -6,7 +6,8 @@ import BlackPawn from '../graphics/black_pawn.png'
 import RedPawn from '../graphics/red_pawn.png'
 export default class CheckerBoard extends Component {
     state = {
-        gameBoard: this.props.gameData
+        gameBoard: this.props.gameData,
+        gameInversed: this.props.boardInversed
     }
 
     pawnClick = (e) => {
@@ -15,7 +16,7 @@ export default class CheckerBoard extends Component {
         const newGame = [...this.state.gameBoard]
         newGame[coord1D] = 0;
         this.setState({gameBoard: newGame})
-        console.log(this.state.gameBoard[coord1D]);
+        console.log(this.state.gameBoard[coord1D]+ ' '+coord1D);
 
     }
 
@@ -44,7 +45,6 @@ export default class CheckerBoard extends Component {
                     const formatIndex = [
                         Math.floor(index/8), //col
                         index % 8 //row (modulo of grid)
-                       //index - Math.floor(index/8)*8 This is basially modulo
                     ]
 
                     if(Math.floor(index/8)+1 & 1){

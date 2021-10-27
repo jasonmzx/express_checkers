@@ -1,0 +1,11 @@
+.main {
+    text-align: center;
+    margin-left: 50%;
+    margin-top: 25%;
+    transform: translate(-50%);
+}
+
+.welcome{
+    font-size: 3vw;
+}
+

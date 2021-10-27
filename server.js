@@ -20,7 +20,7 @@ const express_session = session({
   });
 
 
-//ID generator for rooms:
+//Random ID generator for rooms:
 const id_generator = () => {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   let ret = ''
@@ -192,7 +192,7 @@ app.get('/game/:roomId',async (req,res) =>{
   if( !((roomData).length) ){
     res.send({error: `room doesn't exist`});
   }
-  //IF NOT ADMIN
+  //IF GUEST
   //
   else if ( !((await mongoDBsearch(['rooms',{_id: roomId,admin_session: req.session.uuid}])).length) ){
     console.log('Not an admin')

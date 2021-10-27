@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import {useLocation} from "react-router-dom";
 import CheckerBoard from './CheckerBoard';
+import { CSSProperties } from './GameRoom.css'
 
 export default class GameRoom extends Component {
     state = {
@@ -8,6 +9,7 @@ export default class GameRoom extends Component {
         initReq: 1,
         guest: null,
         g_auth: null,
+        boardInversed: false,
         gameBoard: null,
         url: window.location.pathname
     };
@@ -40,7 +42,7 @@ export default class GameRoom extends Component {
                         }
 
                     } else { //If guest:
-                        this.setState({gameBoard: (this.state.gameBoard).reverse()})
+                        this.setState({gameBoard: (this.state.gameBoard).reverse(), boardInversed: true })
                         if( this.state.guest[1] === true){ //If FTA is true
                             console.log('GUEST FIRST TIME AUTH')
                             socket.send(JSON.stringify({
@@ -90,7 +92,7 @@ export default class GameRoom extends Component {
     renderBoard = () => {
         if(this.state.gameBoard){
         return(
-            <CheckerBoard gameData = {this.state.gameBoard} />
+            <CheckerBoard gameData = {this.state.gameBoard} gameInversed = {this.state.boardInversed}/>
         )
         }
     };
@@ -98,9 +100,10 @@ export default class GameRoom extends Component {
 
     render() {
         return (
-            <div>
+            <div className="main">
                 {this.renderBoard()}
-                Welcome to your game! {this.state.userResponseData}
+                
+                <p className="welcome">Welcome to your checkers game! {this.state.userResponseData}</p>
 
             </div>
         )
