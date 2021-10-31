@@ -4,12 +4,12 @@
 //2D matrix for gameboard (slower array, but visually much easier for debug)
 
 const gameboard = [
-    0,2,0,2,0,2,0,2,
-    2,0,2,0,2,0,0,0,
-    0,0,0,0,0,2,0,2,
+    0,2,0,2,0,2,0,2, //7
+    2,0,2,0,2,0,0,0, //15
+    0,0,0,0,0,1,0,0,
     0,0,0,0,0,0,2,0,
     0,2,0,2,0,0,0,0,
-    0,0,0,0,0,0,2,0,
+    0,0,0,0,0,0,2,0, 
     0,1,0,2,0,1,0,1, //55
     1,0,1,0,1,0,1,0,    
 ]
@@ -32,12 +32,9 @@ const actionCheck = (board, pawnCoord, selectedPawn, king, depth, revFlag, moveO
 
     //Defining Objects
     const pawnMovement = {
-        pawn: revFlag ? [-7,-9] : [7,9], 
+        pawn: revFlag ? [7,9] : [-7,-9], 
         king: [7,9,-7,-9]
     }
-
-    const spotOffset = revFlag ? [7,9] : [-7,-9];
-    console.log(spotOffset);
 
     //if object exists pass in self, else, create data structure
     let moveObject = depth ? moveObj : { moves: [], kills: {} }
@@ -48,8 +45,8 @@ const actionCheck = (board, pawnCoord, selectedPawn, king, depth, revFlag, moveO
     //Assigning valid spots to pawnCoord
     const validateSpots = (checkArray) => {
         for(let move of checkArray){
-            let checkSpot = pawnCoord-move
-            if(!( Math.floor(checkSpot/8) == Math.floor(pawnCoord/8) || !(checkSpot >= 0 && checkSpot <= 63)  )){
+            let checkSpot = pawnCoord+move
+            if(( Math.floor(checkSpot/8) != Math.floor(pawnCoord/8) && (checkSpot >= 0 && checkSpot <= 63)  )){
                 validSpot.push(checkSpot);
             } 
         }    
@@ -65,8 +62,8 @@ const actionCheck = (board, pawnCoord, selectedPawn, king, depth, revFlag, moveO
     for(let spot of validSpot){
         console.log("SPOT: "+spot)
         console.log(`${board[spot]} && ${selectedPawn}`)
-        switch(board[spot]){
-            case selectedPawn: case selectedPawn+2:{ //If spot has own pawn (pawn or king)
+        switch(Math.abs(board[spot])){
+            case selectedPawn:{ //If spot has own pawn (pawn or king)
                 console.log('Same pawn is ahead of it')
                 continue;
             } 
@@ -75,28 +72,26 @@ const actionCheck = (board, pawnCoord, selectedPawn, king, depth, revFlag, moveO
                 if(!depth){
                     moveObject.moves.push(spot);
                 }
-                return moveObject
-                break;
+                continue;
             }   
             default: { //opponent pawn is in spot:
                 console.log('Enemy Pawn! at '+spot+' Original pawn at: '+pawnCoord);
-                if(pawnCoord-spot > 8 && board[spot+spotOffset[1]] != null && board[spot+spotOffset[1]] == 0){ //left side
+                if(pawnCoord-spot > 8 && board[spot+pawnMovement.pawn[1]] != null && board[spot+pawnMovement.pawn[1]] == 0){ //left side
                     
                     if (!moveObject.kills[depth]){ moveObject.kills[depth] = []; } //Check if movObj.kills key exists
 
-                    moveObject.kills[depth].push({'init': pawnCoord,'final': spot+spotOffset[1],'kill':spot})
+                    moveObject.kills[depth].push({'init': pawnCoord,'final': spot+pawnMovement.pawn[1],'kill':spot})
 
-                    actionCheck(board,spot+spotOffset[1],selectedPawn,king,depth+1,revFlag,moveObject);
+                    actionCheck(board,spot+pawnMovement.pawn[1],selectedPawn,king,depth+1,revFlag,moveObject);
                 }
-                else if(pawnCoord-spot < 8 && board[spot+spotOffset[1]] != null && board[spot+spotOffset[0]] == 0){
+                else if(pawnCoord-spot < 8 && board[spot+pawnMovement.pawn[0]] != null && board[spot+pawnMovement.pawn[0]] == 0){
 
                     if (!moveObject.kills[depth]){ moveObject.kills[depth] = []; } //Check if movObj.kills key exists
 
-                    moveObject.kills[depth].push({'init': pawnCoord,'final': spot+spotOffset[0],'kill':spot})
+                    moveObject.kills[depth].push({'init': pawnCoord,'final': spot+pawnMovement.pawn[0],'kill':spot})
 
-                    actionCheck(board,spot+spotOffset[0],selectedPawn,king,depth+1,revFlag,moveObject);
+                    actionCheck(board,spot+pawnMovement.pawn[0],selectedPawn,king,depth+1,revFlag,moveObject);
                 }
-
 
             } 
         }
@@ -117,7 +112,7 @@ const checkBoard = (board, reversed, pawnCoord) => {
 
 }
 
-const checkResult = checkBoard(gameboard, false, 60)
+const checkResult = checkBoard(gameboard, false, 55)
 
 console.log("CheckResult:")
 console.log(checkResult);
