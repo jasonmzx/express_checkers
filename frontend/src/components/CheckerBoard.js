@@ -4,6 +4,7 @@ import BlackTilePNG from '../graphics/black_tile.png'
 import WhiteTilePNG from '../graphics/white_tile.png'
 import BlackPawn from '../graphics/black_pawn.png'
 import RedPawn from '../graphics/red_pawn.png'
+import checker_validation from './validation/checker_validation'
 export default class CheckerBoard extends Component {
     state = {
         gameBoard: this.props.gameData,
@@ -14,6 +15,9 @@ export default class CheckerBoard extends Component {
         const pawnCoord = [ (e.target.id).split('-')[1] , (e.target.id).split('-')[2] ];
         const coord1D = parseInt(pawnCoord[0]*8)+parseInt(pawnCoord[1]);
         const newGame = [...this.state.gameBoard]
+        const result = checker_validation.checkBoard(this.state.gameBoard, coord1D); //algo still broken lol
+        console.log('>>');
+        console.log(result);
         newGame[coord1D] = 0;
         this.setState({gameBoard: newGame})
         console.log(this.state.gameBoard[coord1D]+ ' '+coord1D);

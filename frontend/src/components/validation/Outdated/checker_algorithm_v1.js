@@ -76,7 +76,7 @@ const actionCheck = (board, pawnCoord, selectedPawn, king, depth, revFlag, moveO
             }   
             default: { //opponent pawn is in spot:
                 console.log('Enemy Pawn! at '+spot+' Original pawn at: '+pawnCoord);
-                if(pawnCoord-spot > 8 && board[spot+pawnMovement.pawn[1]] != null && board[spot+pawnMovement.pawn[1]] == 0){ //left side
+                if(pawnCoord-spot > 8 && board[spot+pawnMovement.pawn[1]] === 0){ //left side
                     
                     if (!moveObject.kills[depth]){ moveObject.kills[depth] = []; } //Check if movObj.kills key exists
 
@@ -84,7 +84,7 @@ const actionCheck = (board, pawnCoord, selectedPawn, king, depth, revFlag, moveO
 
                     actionCheck(board,spot+pawnMovement.pawn[1],selectedPawn,king,depth+1,revFlag,moveObject);
                 }
-                else if(pawnCoord-spot < 8 && board[spot+pawnMovement.pawn[0]] != null && board[spot+pawnMovement.pawn[0]] == 0){
+                else if(pawnCoord-spot < 8 && board[spot+pawnMovement.pawn[0]] === 0){
 
                     if (!moveObject.kills[depth]){ moveObject.kills[depth] = []; } //Check if movObj.kills key exists
 

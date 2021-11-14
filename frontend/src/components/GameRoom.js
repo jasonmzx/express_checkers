@@ -42,14 +42,14 @@ export default class GameRoom extends Component {
                         }
 
                     } else { //If guest:
-                        this.setState({gameBoard: (this.state.gameBoard).reverse(), boardInversed: true })
+                        this.setState({boardInversed: true })
                         if( this.state.guest[1] === true){ //If FTA is true
                             console.log('GUEST FIRST TIME AUTH')
                             socket.send(JSON.stringify({
                                 query_type: 'guest_fta',
                                 room_id: (window.location.pathname).slice(6)
                             })) 
-                            this.setState({guest: [this.state.guest[0], false] })
+                            this.setState({guest: [this.state.guest[0], false] }) //Falisfies state
                         } else {
                             this.setState({userResponseData: 'Welcome back, guest'})
                         }
