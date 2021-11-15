@@ -32,6 +32,18 @@
     image-rendering: pixelated;
 }
 
+.move_tile {
+    width: 5vw;
+    height: 5vw;
+    padding: 0;
+    margin: 0;
+    z-index: 10;    
+    background-color: black;
+    background: url('../graphics/move_tile.png')  no-repeat center center; 
+    background-size: cover;
+    image-rendering: pixelated;
+}
+
 .pawn{
     background-color: transparent;
     position: relative;

@@ -8,37 +8,45 @@ import checker_validation from './validation/checker_validation'
 export default class CheckerBoard extends Component {
     state = {
         gameBoard: this.props.gameData,
+        dispOverlay : {},
         gameInversed: this.props.boardInversed
     }
 
-    pawnClick = (e) => {
-        const pawnCoord = [ (e.target.id).split('-')[1] , (e.target.id).split('-')[2] ];
-        const coord1D = parseInt(pawnCoord[0]*8)+parseInt(pawnCoord[1]);
-        const newGame = [...this.state.gameBoard]
-        const result = checker_validation.checkBoard(this.state.gameBoard, coord1D); //algo still broken lol
-        console.log('>>');
-        console.log(result);
-        newGame[coord1D] = 0;
-        this.setState({gameBoard: newGame})
-        console.log(this.state.gameBoard[coord1D]+ ' '+coord1D);
+    //Overlay Initializer:
 
+
+    pawnClick = (e) => {
+        const coord1D = parseInt((e.target.id).split('-')[1]);
+        const newGame = [...(this.state.gameBoard.map((e)=> {return parseInt(e)}))]
+
+        let valid = checker_validation.checkBoard(newGame, coord1D);
+        console.log('Validated: '+JSON.stringify(valid))
+        this.setState({dispOverlay:{}});
+        for(let v of valid){
+            if(Math.abs(v) < 14){
+                let entry = this.state.dispOverlay
+                entry[parseInt(coord1D)+parseInt(v)] = false
+                
+                this.setState({dispOverlay : entry});
+                console.log(this.state.dispOverlay);
+            }
+        }
     }
 
 
     renderTile = (tileColor, pawn,coords) => {
         if(pawn === 0){ //If there is no pawn:
-            return <div className={tileColor ? 'black_tile' : 'white_tile'} Id={'box-'+coords[0]+'-'+coords[1]}>
+            return <div className={tileColor} Id={'box-'+coords}>
             </div>
         } else if(pawn === 1){
-            return <div className={tileColor ? 'black_tile' : 'white_tile'} Id={'box-'+coords[0]+'-'+coords[1]}>
-                <div className='pawn'> <img onClick={this.pawnClick} className='pawn_img' src={BlackPawn} Id={'pawn-'+coords[0]+'-'+coords[1]}/> </div>
+            return <div className={tileColor} Id={'box-'+coords}>
+                <div className='pawn'> <img onClick={this.pawnClick} className='pawn_img' src={BlackPawn} Id={'pawn-'+coords}/> </div>
             </div>       
         } else if(pawn === 2){
-            return <div className={tileColor ? 'black_tile' : 'white_tile'} Id={'box-'+coords[0]+'-'+coords[1]}>
-                <div className='pawn'> <img onClick={this.pawnClick} className='pawn_img' src={RedPawn} Id={'pawn-'+coords[0]+'-'+coords[1]}/> </div>
+            return <div className={tileColor} Id={'box-'+coords}>
+                <div className='pawn'> <img onClick={this.pawnClick} className='pawn_img' src={RedPawn} Id={'pawn-'+coords}/> </div>
             </div>       
-        }        
-
+        }
     }
 
 
@@ -46,22 +54,25 @@ export default class CheckerBoard extends Component {
         return (
             <div className='grid-container'>
                 {this.state.gameBoard.map((elm,index)=>{
-                    const formatIndex = [
-                        Math.floor(index/8), //col
-                        index % 8 //row (modulo of grid)
-                    ]
+                    if( (Object.keys(this.state.dispOverlay)).includes(index.toString()) ){
+                        if(this.state.dispOverlay[index]){
+                            
+                        }   else {
+                            return this.renderTile('move_tile',parseInt(elm),index)
+                        }          
+                    }
 
                     if(Math.floor(index/8)+1 & 1){
                         if(index & 1){
-                            return this.renderTile(1,parseInt(elm),formatIndex)
+                            return this.renderTile('black_tile',parseInt(elm),index)
                         } else { 
-                            return this.renderTile(0,parseInt(elm),formatIndex)
+                            return this.renderTile('white_tile',parseInt(elm),index)
                         }
                     } else{
                         if(index+1 & 1){
-                            return this.renderTile(1,parseInt(elm),formatIndex)
+                            return this.renderTile('black_tile',parseInt(elm),index)
                         } else { 
-                            return this.renderTile(0,parseInt(elm),formatIndex)
+                            return this.renderTile('white_tile',parseInt(elm),index)
                         }
                     }
 
