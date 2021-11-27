@@ -21,12 +21,13 @@ const checkBoard = (board, pawnCoord, justKilled) => {
     } else {
         offsets = [-7,-9,7,9];
     }
-
+    
     let res = [];
     let foundKill = false; //If this flag is negative after the for of loop, the recursion stops.
     for(let o of offsets){
         let checkSpot = pawnCoord + o;
-        if(Math.floor(checkSpot/8) != Math.floor(pawnCoord/8) && 0 <=checkSpot && checkSpot <= 63){
+        if( Math.abs( Math.floor(pawnCoord/8) - Math.floor(checkSpot/8)) === 1 && 0 <= checkSpot && checkSpot <= 63){
+       // if(Math.floor(checkSpot/8) !== Math.floor(pawnCoord/8) && 0 <= checkSpot && checkSpot <= 63){
             if(board[pawnCoord + o] === 0 && !justKilled){
                 res.push([o]);
                 foundKill = true;
@@ -56,7 +57,7 @@ const checkBoard = (board, pawnCoord, justKilled) => {
     return res;
 }
 
-//console.log(checkBoard(gameboard,46))
+// console.log(checkBoard(gameboard,42))
 
 module.exports = {
     checkBoard

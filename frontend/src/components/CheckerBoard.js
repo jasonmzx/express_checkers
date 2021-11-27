@@ -15,13 +15,13 @@ export default class CheckerBoard extends Component {
     //Overlay Initializer:
 
 
-    pawnClick = (e) => {
+    pawnClick = async (e) => {
+        await this.setState({dispOverlay: {} });
         const coord1D = parseInt((e.target.id).split('-')[1]);
         const newGame = [...(this.state.gameBoard.map((e)=> {return parseInt(e)}))]
 
         let valid = checker_validation.checkBoard(newGame, coord1D);
         console.log('Validated: '+JSON.stringify(valid))
-        this.setState({dispOverlay:{}});
         for(let v of valid){
             if(Math.abs(v) < 14){
                 let entry = this.state.dispOverlay

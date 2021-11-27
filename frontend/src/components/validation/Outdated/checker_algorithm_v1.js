@@ -8,8 +8,8 @@ const gameboard = [
     2,0,2,0,2,0,0,0, //15
     0,0,0,0,0,1,0,0,
     0,0,0,0,0,0,2,0,
-    0,2,0,2,0,0,0,0,
-    0,0,0,0,0,0,2,0, 
+    0,0,0,2,0,0,0,0,
+    1,0,0,0,0,0,2,0, 
     0,1,0,2,0,1,0,1, //55
     1,0,1,0,1,0,1,0,    
 ]
@@ -112,7 +112,7 @@ const checkBoard = (board, reversed, pawnCoord) => {
 
 }
 
-const checkResult = checkBoard(gameboard, false, 55)
+const checkResult = checkBoard(gameboard, false, 40)
 
 console.log("CheckResult:")
 console.log(checkResult);
