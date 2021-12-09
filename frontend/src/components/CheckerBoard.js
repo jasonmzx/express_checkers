@@ -8,11 +8,29 @@ import checker_validation from './validation/checker_validation'
 export default class CheckerBoard extends Component {
     state = {
         gameBoard: this.props.gameData,
+        boardInv : this.props.boardInv,
+        dispBoard: null,
         dispOverlay : {},
-        gameInversed: this.props.boardInversed
+        freshBoard : this.props.fresh
     }
 
     //Overlay Initializer:
+
+    //Whenever a pawn is clicked, this function executes:
+        //This function executes the validation algorithm, then generates an overlay of all possible moves the user can make
+
+    Initializer = async () => {
+        console.log('INITIALIZER:')
+        console.log(this.state.dispBoard);
+        console.log(this.state.boardInv);
+        console.log(this.state.freshBoard);
+        if(this.state.boardInv && this.state.freshBoard){
+            console.log("GGETS HERE?")
+            this.setState({dispBoard: [...this.state.gameBoard.reverse()] , freshBoard: false});
+            console.log('after:')
+            console.log(this.state.dispBoard);
+        } 
+    }
 
 
     pawnClick = async (e) => {
@@ -33,13 +51,18 @@ export default class CheckerBoard extends Component {
         }
     }
 
+    tileClick = async (e) => {
+        const coord1D = parseInt((e.target.id).split('-')[1]);
+    
+        console.log('Tile has been clicked '+coord1D);
+    }
 
     renderTile = (tileColor, pawn,coords) => {
         if(pawn === 0){ //If there is no pawn:
             return <div className={tileColor} Id={'box-'+coords}>
             </div>
         } else if(pawn === 1){
-            return <div className={tileColor} Id={'box-'+coords}>
+            return <div className={tileColor} onClick={this.tileClick} Id={'box-'+coords}>
                 <div className='pawn'> <img onClick={this.pawnClick} className='pawn_img' src={BlackPawn} Id={'pawn-'+coords}/> </div>
             </div>       
         } else if(pawn === 2){
@@ -49,9 +72,12 @@ export default class CheckerBoard extends Component {
         }
     }
 
+    
 
     render() {
+        this.Initializer();
         return (
+            <div>
             <div className='grid-container'>
                 {this.state.gameBoard.map((elm,index)=>{
                     if( (Object.keys(this.state.dispOverlay)).includes(index.toString()) ){
@@ -79,6 +105,8 @@ export default class CheckerBoard extends Component {
                 }
 
                 ) } 
+            </div>
+            <p>{this.state.boardInversed}</p>
             </div>
         )
     }

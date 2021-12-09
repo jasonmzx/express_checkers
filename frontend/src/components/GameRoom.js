@@ -9,74 +9,88 @@ export default class GameRoom extends Component {
         initReq: 1,
         guest: null,
         g_auth: null,
-        boardInversed: false,
+        boardInversed: null,
         gameBoard: null,
         url: window.location.pathname
     };
 
-    componentDidMount = async () => {
+
+    AuthenticateUser = async () => {
         try{
+            
+            //Call API
             const backendResp = await this.callBackendAPI();
-            // If backend Response is an error, simply throw error onto screen (via data state)
+            
+            //If Error, throw it
             if(backendResp.error){
                 this.setState({userResponseData: backendResp.error})
-            //If there is no error, 
-            } else {
-                this.setState({guest: [backendResp.valid.guest,backendResp.valid.fta] })
-                if(backendResp.valid.gameBoard){
-                    this.setState({gameBoard : backendResp.valid.gameBoard}); //g_auth: Is guest here?
+                return
+            }
+
+            //Initially Setting the State:
+
+            this.setState({guest: [backendResp.valid.guest,backendResp.valid.fta] })
+
+            // WS Connection:
+            const socket = new WebSocket("ws:"+(window.location.href).split(':')[1]+':5000');
+
+            socket.onopen = () => {
+                if( backendResp.valid.guest === false ){ //If admin
+
+                    this.setState({
+                        userResponseData : this.state.gameBoard ? `your opponent is here` : 'Waiting for opponent... '
+                    })
+                    
+                } else { //If guest:
+
+                    if( this.state.guest[1] === true){ //If FTA is true
+
+                        socket.send(JSON.stringify({
+                            query_type: 'guest_fta',
+                            room_id: (window.location.pathname).slice(6)
+                        }));
+
+                        this.setState({guest: [this.state.guest[0], false] }) //Falisfies FTA state
+                        return
+                    } 
+                    
+                    this.setState({userResponseData: 'Welcome back, guest'})
+                    
+                }
+            
+            }
+
+            
+            socket.onmessage = (response) => {
+
+                const respData = JSON.parse(response.data);
+
+                if(!backendResp.valid.guest){ //If admin:
+
+                    if(respData.guest_auth === true){
+                        this.setState({userResponseData: 'Guest has arrived!', gameBoard: respData.game_board});
+                    }    
+                } else { //If guest:
 
                 }
-                //Creation of Websocket connection:
-                const socket = new WebSocket("ws:"+(window.location.href).split(':')[1]+':5000');
-
-
-                socket.onopen = () => {
-                    console.log(this.state.guest);
-                    if( this.state.guest[0] === false ){ //If admin
-                        if(this.state.gameBoard){
-                            this.setState({userResponseData: `you're opponent is here!`})
-                        } else {
-
-                            this.setState({userResponseData: 'Waiting for opponent...'}) 
-                        }
-
-                    } else { //If guest:
-                        this.setState({boardInversed: true })
-                        if( this.state.guest[1] === true){ //If FTA is true
-                            console.log('GUEST FIRST TIME AUTH')
-                            socket.send(JSON.stringify({
-                                query_type: 'guest_fta',
-                                room_id: (window.location.pathname).slice(6)
-                            })) 
-                            this.setState({guest: [this.state.guest[0], false] }) //Falisfies state
-                        } else {
-                            this.setState({userResponseData: 'Welcome back, guest'})
-                        }
-                    }
-                
-                }
-
-                socket.onmessage = (response) => {
-                    console.log(response);
-                    const respData = JSON.parse(response.data);
-
-                    if(this.state.guest[0] === false){ //If admin:
-                        if(respData.guest_auth === true){
-                            this.setState({userResponseData: 'Guest has arrived!', gameBoard: respData.game_board});
-                        }    
-                    } else { //If guest:
-
-                    }
-
-                }
-
 
             }
-            console.log(backendResp);
+
+            if(backendResp.valid.gameBoard){
+              
+                this.setState({gameBoard : backendResp.valid.gameBoard}); 
+
+            }
+
         } catch(err){
-            console.log(err);
+            console.log(err) //Handle Error by throwing it as text in consoel
         }
+    }
+
+
+
+    componentDidMount = async () => {
+    await this.AuthenticateUser();    
     } //End of componentDidMount
     
     callBackendAPI = async () => {
@@ -91,8 +105,14 @@ export default class GameRoom extends Component {
     
     renderBoard = () => {
         if(this.state.gameBoard){
+            console.log(this.state.gameBoard);
+            let props = {
+                gameData :this.state.gameBoard,
+                boardInv : this.state.guest[0] ? true : false,
+                fresh: true
+            }
         return(
-            <CheckerBoard gameData = {this.state.gameBoard} gameInversed = {this.state.boardInversed}/>
+            <CheckerBoard {...props}/>
         )
         }
     };
