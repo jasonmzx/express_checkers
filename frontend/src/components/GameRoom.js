@@ -105,12 +105,12 @@ export default class GameRoom extends Component {
     
     renderBoard = () => {
         if(this.state.gameBoard){
-            console.log(this.state.gameBoard);
+            console.log('PROPS : ');
             let props = {
-                gameData :this.state.gameBoard,
-                boardInv : this.state.guest[0] ? true : false,
-                fresh: true
+                gameData : this.state.guest[0] ? [...this.state.gameBoard.reverse()] : this.state.gameBoard,
+                boardInv : this.state.guest[0] ? true : false
             }
+            console.log(props)
         return(
             <CheckerBoard {...props}/>
         )

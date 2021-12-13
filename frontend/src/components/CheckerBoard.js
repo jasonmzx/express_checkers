@@ -11,7 +11,6 @@ export default class CheckerBoard extends Component {
         boardInv : this.props.boardInv,
         dispBoard: null,
         dispOverlay : {},
-        freshBoard : this.props.fresh
     }
 
     //Overlay Initializer:
@@ -19,26 +18,25 @@ export default class CheckerBoard extends Component {
     //Whenever a pawn is clicked, this function executes:
         //This function executes the validation algorithm, then generates an overlay of all possible moves the user can make
 
-    Initializer = async () => {
-        console.log('INITIALIZER:')
-        console.log(this.state.dispBoard);
-        console.log(this.state.boardInv);
-        console.log(this.state.freshBoard);
-        if(this.state.boardInv && this.state.freshBoard){
-            console.log("GGETS HERE?")
-            this.setState({dispBoard: [...this.state.gameBoard.reverse()] , freshBoard: false});
-            console.log('after:')
-            console.log(this.state.dispBoard);
-        } 
-    }
-
 
     pawnClick = async (e) => {
         await this.setState({dispOverlay: {} });
         const coord1D = parseInt((e.target.id).split('-')[1]);
         const newGame = [...(this.state.gameBoard.map((e)=> {return parseInt(e)}))]
 
-        let valid = checker_validation.checkBoard(newGame, coord1D);
+
+        console.log('PAWN CLICK DEBUG:');
+        console.log('Game Board:');
+        console.log(newGame);
+        console.log('Coord 1D');
+        console.log(coord1D);
+
+        let valid = this.state.boardInv ? checker_validation.checkBoard(newGame.reverse(),63-coord1D) : checker_validation.checkBoard(newGame, coord1D);
+
+        if(this.state.boardInv){
+            valid = [...valid.map((e) => {return e.map( (j) => {return -1*j} )  })];
+        }
+
         console.log('Validated: '+JSON.stringify(valid))
         for(let v of valid){
             if(Math.abs(v) < 14){
@@ -75,7 +73,6 @@ export default class CheckerBoard extends Component {
     
 
     render() {
-        this.Initializer();
         return (
             <div>
             <div className='grid-container'>
