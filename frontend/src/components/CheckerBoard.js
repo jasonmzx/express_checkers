@@ -4,6 +4,10 @@ import BlackTilePNG from '../graphics/black_tile.png'
 import WhiteTilePNG from '../graphics/white_tile.png'
 import BlackPawn from '../graphics/black_pawn.png'
 import RedPawn from '../graphics/red_pawn.png'
+
+import selectedBlackPawn from '../graphics/selected_black_pawn.png'
+import selectedRedPawn from '../graphics/selected_red_pawn.png'
+
 import checker_validation from './validation/checker_validation'
 export default class CheckerBoard extends Component {
     state = {
@@ -11,6 +15,7 @@ export default class CheckerBoard extends Component {
         boardInv : this.props.boardInv,
         dispBoard: null,
         dispOverlay : {},
+        selectedPawn : null
     }
 
     //Overlay Initializer:
@@ -20,9 +25,12 @@ export default class CheckerBoard extends Component {
 
 
     pawnClick = async (e) => {
-        await this.setState({dispOverlay: {} });
         const coord1D = parseInt((e.target.id).split('-')[1]);
+
+        await this.setState({dispOverlay: {'selectedPawn' : coord1D} });
+
         const newGame = [...(this.state.gameBoard.map((e)=> {return parseInt(e)}))]
+
 
 
         console.log('PAWN CLICK DEBUG:');
@@ -38,10 +46,12 @@ export default class CheckerBoard extends Component {
         }
 
         console.log('Validated: '+JSON.stringify(valid))
+
+
         for(let v of valid){
             if(Math.abs(v) < 14){
                 let entry = this.state.dispOverlay
-                entry[parseInt(coord1D)+parseInt(v)] = false
+                entry[parseInt(coord1D)+parseInt(v)] = false //false is move, true is kill
                 
                 this.setState({dispOverlay : entry});
                 console.log(this.state.dispOverlay);
@@ -52,22 +62,24 @@ export default class CheckerBoard extends Component {
     tileClick = async (e) => {
         const coord1D = parseInt((e.target.id).split('-')[1]);
     
+
+
         console.log('Tile has been clicked '+coord1D);
     }
 
-    renderTile = (tileColor, pawn,coords) => {
+    renderTile = (tileColor, pawn,coords,selected) => {
         if(pawn === 0){ //If there is no pawn:
-            return <div className={tileColor} Id={'box-'+coords}>
-            </div>
-        } else if(pawn === 1){
             return <div className={tileColor} onClick={this.tileClick} Id={'box-'+coords}>
-                <div className='pawn'> <img onClick={this.pawnClick} className='pawn_img' src={BlackPawn} Id={'pawn-'+coords}/> </div>
+            </div>
+        } else if(pawn === 1){ //Black Pawn
+            return <div className={tileColor} onClick={this.tileClick} Id={'box-'+coords}>
+                <div className='pawn'> <img onClick={this.pawnClick} className='pawn_img' src={selected ? selectedBlackPawn : BlackPawn} Id={'pawn-'+coords}/> </div>
             </div>       
-        } else if(pawn === 2){
-            return <div className={tileColor} Id={'box-'+coords}>
-                <div className='pawn'> <img onClick={this.pawnClick} className='pawn_img' src={RedPawn} Id={'pawn-'+coords}/> </div>
+        } else if(pawn === 2){ //Red Pawn
+            return <div className={tileColor} onClick={this.tileClick} Id={'box-'+coords}>
+                <div className='pawn'> <img onClick={this.pawnClick} className='pawn_img' src={selected ? selectedRedPawn : RedPawn} Id={'pawn-'+coords}/> </div>
             </div>       
-        }
+        } 
     }
 
     
@@ -77,25 +89,30 @@ export default class CheckerBoard extends Component {
             <div>
             <div className='grid-container'>
                 {this.state.gameBoard.map((elm,index)=>{
+                    let selectedCheck = 0;
+                    if( this.state.dispOverlay['selectedPawn'] === index){
+                        selectedCheck = 1;
+                    }
+
                     if( (Object.keys(this.state.dispOverlay)).includes(index.toString()) ){
-                        if(this.state.dispOverlay[index]){
-                            
-                        }   else {
-                            return this.renderTile('move_tile',parseInt(elm),index)
+                        if(this.state.dispOverlay[index]){   
+                        }
+                        else {
+                            return this.renderTile('move_tile',parseInt(elm),index,selectedCheck)
                         }          
                     }
 
                     if(Math.floor(index/8)+1 & 1){
                         if(index & 1){
-                            return this.renderTile('black_tile',parseInt(elm),index)
+                            return this.renderTile('black_tile',parseInt(elm),index,selectedCheck)
                         } else { 
-                            return this.renderTile('white_tile',parseInt(elm),index)
+                            return this.renderTile('white_tile',parseInt(elm),index,selectedCheck)
                         }
                     } else{
                         if(index+1 & 1){
-                            return this.renderTile('black_tile',parseInt(elm),index)
+                            return this.renderTile('black_tile',parseInt(elm),index,selectedCheck)
                         } else { 
-                            return this.renderTile('white_tile',parseInt(elm),index)
+                            return this.renderTile('white_tile',parseInt(elm),index,selectedCheck)
                         }
                     }
 
