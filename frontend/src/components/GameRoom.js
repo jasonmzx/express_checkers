@@ -83,7 +83,7 @@ export default class GameRoom extends Component {
             }
 
         } catch(err){
-            console.log(err) //Handle Error by throwing it as text in consoel
+            console.log(err) //Handle Error by throwing it as text in console
         }
     }
 

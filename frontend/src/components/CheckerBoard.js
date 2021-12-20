@@ -9,13 +9,14 @@ import selectedBlackPawn from '../graphics/selected_black_pawn.png'
 import selectedRedPawn from '../graphics/selected_red_pawn.png'
 
 import checker_validation from './validation/checker_validation'
+import { tokenChars } from 'ws/lib/validation'
 export default class CheckerBoard extends Component {
     state = {
         gameBoard: this.props.gameData,
         boardInv : this.props.boardInv,
-        dispBoard: null,
         dispOverlay : {},
-        selectedPawn : null
+        selectedPawn : null,
+        selectedValid : []
     }
 
     //Overlay Initializer:
@@ -31,8 +32,6 @@ export default class CheckerBoard extends Component {
 
         const newGame = [...(this.state.gameBoard.map((e)=> {return parseInt(e)}))]
 
-
-
         console.log('PAWN CLICK DEBUG:');
         console.log('Game Board:');
         console.log(newGame);
@@ -44,6 +43,10 @@ export default class CheckerBoard extends Component {
         if(this.state.boardInv){
             valid = [...valid.map((e) => {return e.map( (j) => {return -1*j} )  })];
         }
+
+        this.setState({
+            selectedValid : valid
+        })
 
         console.log('Validated: '+JSON.stringify(valid))
 
@@ -61,10 +64,39 @@ export default class CheckerBoard extends Component {
 
     tileClick = async (e) => {
         const coord1D = parseInt((e.target.id).split('-')[1]);
-    
+
+        //Check if tile is valid
+        if(Object.keys(this.state.dispOverlay).includes(coord1D.toString()) ){ 
+
+            //Checker Board Socket Auth:
+            const socket = new WebSocket("ws:"+(window.location.href).split(':')[1]+':5000');
+
+            socket.onopen = () => {
+                socket.send(JSON.stringify(
+                    {
+                        query_type : 'movement',
+                        room_id : (window.location.pathname).slice(6),
+                        movement: {current: this.state.dispOverlay['selectedPawn'], new: coord1D}    
+                    }
+                ))
+            }
+
+            //Move tile
+            if(!this.state.dispOverlay[coord1D.toString()]) {
+
+            } 
+
+            //Attack tile
+            if(this.state.dispOverlay[coord1D.toString()]) {
+                console.log('attack tile')
+            }
+
+            console.log(this.state.selectedValid)
+        }
 
 
         console.log('Tile has been clicked '+coord1D);
+        console.log(this.state.dispOverlay);
     }
 
     renderTile = (tileColor, pawn,coords,selected) => {
@@ -103,7 +135,7 @@ export default class CheckerBoard extends Component {
                     }
 
                     if(Math.floor(index/8)+1 & 1){
-                        if(index & 1){
+                        if(index & 1){ //Checking for even or odd int value
                             return this.renderTile('black_tile',parseInt(elm),index,selectedCheck)
                         } else { 
                             return this.renderTile('white_tile',parseInt(elm),index,selectedCheck)
@@ -125,3 +157,4 @@ export default class CheckerBoard extends Component {
         )
     }
 }
+

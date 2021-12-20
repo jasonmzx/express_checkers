@@ -82,8 +82,10 @@ wsServer.on('connection', (socket,ws_request) => {
     console.log('WS connected');
     //Instance of session, add property to socket:
     express_session(ws_request, {}, () => {
-      console.log('WS SESSION: '+ws_request.session.uuid)
       socket.sess_id = ws_request.session.uuid
+      console.log('WS SESSION: '+ws_request.session.uuid)
+      console.log('# WS Clients: ' + wsServer.clients.size.toString())
+
 
     });
 
@@ -101,7 +103,9 @@ wsServer.on('connection', (socket,ws_request) => {
         room_name : parsedData.room_name,
         admin_session: ws_request.session.uuid,
         guest_session : '',
-        game_board: '0202020220202020020202020000000000000000101010100101010110101010'.split('') //8 x 8 Checkers grid (1D array), 0 = Empty spot, 1 = red, 2 = black
+        game_board: '0202020220202020020202020000000000000000101010100101010110101010'.split(''), //8 x 8 Checkers grid (1D array), 0 = Empty spot, 1 = red, 2 = black
+        turn: null
+
       }
 
       await mongoDBinsert([ 'rooms', insertData]);
@@ -115,13 +119,26 @@ wsServer.on('connection', (socket,ws_request) => {
     } else if(parsedData.query_type === 'guest_fta'){
       const findRoom = await mongoDBsearch(['rooms',{_id: parsedData.room_id}]); //This obj is wrapped in an array, please reference findRoom as findRoom[0]
       console.log('GUEST has authenticated')
-      await mongoDBupdate('rooms',{_id : findRoom[0]._id }, { $set : { guest_session : ws_request.session.uuid } }, {upsert: false})
+      await mongoDBupdate('rooms',{_id : findRoom[0]._id }, { $set : { guest_session : ws_request.session.uuid , turn : true } }, {upsert: false})
 
       console.log(findRoom);
       socket.send('yup!');
 
       console.log(wsServer.clients.size);
 
+    } else if(parsedData.query_type === 'movement'){
+      console.log('MOVEMENT INCOMING:')
+      const selectedRoom = await mongoDBsearch(['rooms',{_id : parsedData.room_id} ]);
+      
+      // if(socket.sess_id === parsedData.admin_session){
+
+      // } else if(socket.sess_id === parsedData.guest_session){
+
+      // } 
+
+
+      console.log(selectedRoom);
+    
     }
 
 
@@ -142,7 +159,7 @@ const mongoMonitor = async (pipeline) => {
     //If the guest_session property is updated: (Guest has authenticated):
     if(next.updateDescription.updatedFields.guest_session){
       //Find corresponding table:
-      const findRoom = await mongoDBsearch(['rooms',{guest_session: next.updateDescription.updatedFields.guest_session }]);
+      const findRoom = await mongoDBsearch(['rooms',{guest_session: next.updateDescription.updatedFields.guest_session}]);
       console.log(findRoom)
 
       for(const c of wsServer.clients ){
@@ -151,6 +168,11 @@ const mongoMonitor = async (pipeline) => {
         }
       }
 
+
+    }
+
+    if(next.updateDescription.updatedFields.game_board){
+      console.log('game board has been edited')
 
     }
 
