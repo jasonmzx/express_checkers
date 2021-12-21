@@ -104,7 +104,7 @@ wsServer.on('connection', (socket,ws_request) => {
         admin_session: ws_request.session.uuid,
         guest_session : '',
         game_board: '0202020220202020020202020000000000000000101010100101010110101010'.split(''), //8 x 8 Checkers grid (1D array), 0 = Empty spot, 1 = red, 2 = black
-        turn: null
+        turn: null //null: Game isn't authed , false: Guest's turn , true: Admin's turn
 
       }
 

@@ -1,13 +1,25 @@
+const vC = require('./validationConverter.js');
+const converter = vC.Converter;
+
 const gameboard = [
-    0,2,0,2,0,2,0,2, //7
-    2,0,2,0,2,0,0,0, //15
-    0,2,0,2,0,2,0,2,
-    0,0,0,0,0,0,0,0,
-    0,0,0,0,0,2,0,0,
-     1,0,1,0,1,0,1,0, // 47
-     0,1,0,1,0,1,0,1, //55
-     1,0,1,0,1,0,1,0,    
+    0,0,0,2,0,2,0,2,  //  7
+    2,0,2,0,2,0,0,0,  // 15
+    0,2,0,0,0,2,0,0,  // 23
+    0,0,0,0,2,0,2,0,  // 31
+    0,0,0,0,0,0,0,0,  // 39
+     1,0,1,0,1,0,0,0, // 47
+     0,1,0,1,0,1,0,1, // 55
+     1,0,1,0,1,0,1,0, // 63   
  ]
+
+const displayBoard = (board) => {
+    console.log('beginning:')
+    console.log(board);
+
+    for(let i = 0; i < 8; i++){
+        console.log(board.slice(0,1));
+    }
+}
 
 
 const checkBoard = (board, pawnCoord, justKilled) => {
@@ -32,7 +44,10 @@ const checkBoard = (board, pawnCoord, justKilled) => {
                 res.push([o]);
                 foundKill = true;
             }
-            else if(Math.abs(board[pawnCoord + o]) === 3 - Math.abs(p) && board[pawnCoord + o * 2] === 0){ //kill scenario
+            else if(Math.abs(board[pawnCoord + o]) === 3 - Math.abs(p) 
+                    && board[pawnCoord + o * 2] === 0 
+                    &&  Math.abs( Math.floor(pawnCoord/8) - Math.floor( (pawnCoord + o * 2)/8 ) === 2 )
+                ){ //kill scenario
                 foundKill = true;
                 //edit board
                 board[pawnCoord] = 0;
@@ -57,7 +72,14 @@ const checkBoard = (board, pawnCoord, justKilled) => {
     return res;
 }
 
-console.log(checkBoard(gameboard,46))
+console.log('result:')
+console.log(checkBoard(gameboard,55))
+console.log('?')
+
+
+//console.log(converter(gameboard, checkBoard(gameboard,55),55,46 ));
+
+displayBoard(converter(gameboard, checkBoard(gameboard,55),55,46 ));
 
 // module.exports = {
 //     checkBoard
