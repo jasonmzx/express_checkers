@@ -1,5 +1,9 @@
 
-let Converter = async (board, validation,oldPawn,newPawn) => {
+let Converter = (board, validation,oldPawn,newPawn) => {
+
+    const pC = board[oldPawn];
+
+    console.log(validation);
 
     const reducerSum = (pV, cV) => pV + cV;
 
@@ -18,35 +22,72 @@ let Converter = async (board, validation,oldPawn,newPawn) => {
     
     console.log(pathFilter);
 
-    switch(board[oldPawn]) {
-        case 1:
-            console.log('got hr?')
-            for(let j = 0; j < positionPossib[pathFilter[0]].length; j++ ){
-                const vJ = validation[pathFilter[0]][j];
-                const pJ = positionPossib[pathFilter[0]][j];
-                
-                if(Math.abs(vJ) < 14 ){ //Move scenario (no kill)
+    for(let j = 0; j < positionPossib[pathFilter[0]].length; j++ ){
+        const vJ = validation[pathFilter[0]][j];
+        const pJ = positionPossib[pathFilter[0]][j];
+
+        console.log(vJ +' , '+pJ);
+            
+        if(Math.abs(vJ) < 14 ){ //Move scenario (no kill)
+                board[oldPawn] = 0;
+                board[pJ] = pC;
+                return board;
+        } else {
+
+                board[pJ + 
+                    (positionPossib[pathFilter[0]][0] > 0 ? -1 : 1)
+                    * vJ/2] = 0;
+
+                if(newPawn === pJ) {
                     board[oldPawn] = 0;
-                    board[pJ] = 1;
+                    board[pJ] = pC;
                     return board;
+                }
 
-                } else {
+        }   //end of else 
 
-                }    
-
-                console.log(vJ +' , '+pJ);
-
-            }    
+        }    //end of loop
 
 
-            return;
-        case 2:
-            //code
-            return;
-        default: //(If king)
-            //code
-            return;
-    }
+        return;
+
+
+
+    // switch(board[oldPawn]) {
+    //     case 1:
+    //         for(let j = 0; j < positionPossib[pathFilter[0]].length; j++ ){
+    //             const vJ = validation[pathFilter[0]][j];
+    //             const pJ = positionPossib[pathFilter[0]][j];
+
+    //             console.log(vJ +' , '+pJ);
+                
+    //             if(Math.abs(vJ) < 14 ){ //Move scenario (no kill)
+    //                 board[oldPawn] = 0;
+    //                 board[pJ] = 1;
+    //                 return board;
+    //             } else {
+
+    //                 board[pJ + -1 * vJ/2] = 0;
+
+    //                 if(newPawn === pJ){
+    //                     board[oldPawn] = 0;
+    //                     board[pJ] = 1;
+    //                     return board;
+    //                 }
+
+    //             }   //end of else 
+
+    //         }    //end of loop
+
+
+    //         return;
+    //     case 2:
+    //         //code
+    //         return;
+    //     default: //(If king)
+    //         //code
+    //         return;
+    // }
 
 
     

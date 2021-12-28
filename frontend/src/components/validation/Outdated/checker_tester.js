@@ -3,21 +3,20 @@ const converter = vC.Converter;
 
 const gameboard = [
     0,0,0,2,0,2,0,2,  //  7
-    2,0,2,0,2,0,0,0,  // 15
-    0,2,0,0,0,2,0,0,  // 23
-    0,0,0,0,2,0,2,0,  // 31
+    2,0,2,0,0,0,1,0,  // 15
+    0,2,0,0,0,0,0,0,  // 23
+    0,0,0,0,1,0,2,0,  // 31
     0,0,0,0,0,0,0,0,  // 39
-     1,0,1,0,1,0,0,0, // 47
-     0,1,0,1,0,1,0,1, // 55
-     1,0,1,0,1,0,1,0, // 63   
+    1,0,1,0,1,0,2,0, // 47
+    0,1,0,1,0,1,0,1, // 55
+    1,0,1,0,1,0,1,0, // 63   
  ]
 
 const displayBoard = (board) => {
     console.log('beginning:')
-    console.log(board);
 
     for(let i = 0; i < 8; i++){
-        console.log(board.slice(0,1));
+        console.log(board.slice( (i)*8 ,(i+1)*8 ).toString());
     }
 }
 
@@ -37,6 +36,7 @@ const checkBoard = (board, pawnCoord, justKilled) => {
     let res = [];
     let foundKill = false; //If this flag is negative after the for of loop, the recursion stops.
     for(let o of offsets){
+        console.log('spot' + o)
         let checkSpot = pawnCoord + o;
         if( Math.abs( Math.floor(pawnCoord/8) - Math.floor(checkSpot/8)) === 1 && 0 <= checkSpot && checkSpot <= 63){
        // if(Math.floor(checkSpot/8) !== Math.floor(pawnCoord/8) && 0 <= checkSpot && checkSpot <= 63){
@@ -46,8 +46,10 @@ const checkBoard = (board, pawnCoord, justKilled) => {
             }
             else if(Math.abs(board[pawnCoord + o]) === 3 - Math.abs(p) 
                     && board[pawnCoord + o * 2] === 0 
-                    &&  Math.abs( Math.floor(pawnCoord/8) - Math.floor( (pawnCoord + o * 2)/8 ) === 2 )
+                    && Math.abs( Math.floor(pawnCoord/8) - Math.floor( (pawnCoord + o * 2)/8 ) ) === 2
+                    //&&  Math.abs( Math.floor(pawnCoord/8) - Math.floor( (pawnCoord + o * 2)/8 ) === 2 )
                 ){ //kill scenario
+                console.log('gets here once?')
                 foundKill = true;
                 //edit board
                 board[pawnCoord] = 0;
@@ -73,13 +75,18 @@ const checkBoard = (board, pawnCoord, justKilled) => {
 }
 
 console.log('result:')
-console.log(checkBoard(gameboard,55))
+//console.log(checkBoard(gameboard,5))
 console.log('?')
 
 
 //console.log(converter(gameboard, checkBoard(gameboard,55),55,46 ));
 
-displayBoard(converter(gameboard, checkBoard(gameboard,55),55,46 ));
+//displayBoard(converter(gameboard, checkBoard(gameboard,55),55,1 ));
+
+
+
+//console.log(checkBoard(gameboard,7));
+displayBoard(converter(gameboard, checkBoard(gameboard,7),7,21 ))
 
 // module.exports = {
 //     checkBoard
