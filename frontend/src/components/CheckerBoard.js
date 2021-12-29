@@ -24,7 +24,6 @@ export default class CheckerBoard extends Component {
     //Whenever a pawn is clicked, this function executes:
         //This function executes the validation algorithm, then generates an overlay of all possible moves the user can make
 
-
     pawnClick = async (e) => {
         const coord1D = parseInt((e.target.id).split('-')[1]);
 
@@ -76,7 +75,7 @@ export default class CheckerBoard extends Component {
                     {
                         query_type : 'movement',
                         room_id : (window.location.pathname).slice(6),
-                        movement: {current: this.state.dispOverlay['selectedPawn'], new: coord1D}    
+                        movement: {old: this.state.dispOverlay['selectedPawn'], new: coord1D}    
                     }
                 ))
             }
@@ -114,7 +113,12 @@ export default class CheckerBoard extends Component {
         } 
     }
 
-    
+    componentDidUpdate(){
+        console.log('changed?')
+        if(this.props.gameData != this.state.gameBoard){
+            this.setState({gameBoard: this.props.gameData,dispOverlay : {}});
+        }
+    }
 
     render() {
         return (

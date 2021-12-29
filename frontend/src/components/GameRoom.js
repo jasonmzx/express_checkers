@@ -44,7 +44,7 @@ export default class GameRoom extends Component {
                 } else { //If guest:
 
                     if( this.state.guest[1] === true){ //If FTA is true
-
+                        console.log("REACHING ?? ADMIN !!!")
                         socket.send(JSON.stringify({
                             query_type: 'guest_fta',
                             room_id: (window.location.pathname).slice(6)
@@ -62,13 +62,20 @@ export default class GameRoom extends Component {
 
             
             socket.onmessage = (response) => {
+                console.log("Something came in");
 
-                const respData = JSON.parse(response.data);
+                const socketData = JSON.parse(response.data);
+
+
+                if(socketData.action_type === 'movementResult'){
+                    this.setState({gameBoard : socketData.game_board});
+                    this.renderBoard();
+                }
 
                 if(!backendResp.valid.guest){ //If admin:
-
-                    if(respData.guest_auth === true){
-                        this.setState({userResponseData: 'Guest has arrived!', gameBoard: respData.game_board});
+                    
+                    if(socketData.guest_auth === true){
+                        this.setState({userResponseData: 'Guest has arrived!', gameBoard: socketData.game_board});
                     }    
                 } else { //If guest:
 

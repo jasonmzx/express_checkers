@@ -4,9 +4,11 @@ const app = express(); //express app
 const session = require('express-session'); //express sessions
 const uuid = require('uuid');
 const port = process.env.PORT || 5000; 
-const mongo = require('./mongoDatabase.js')
-const mongoClient = mongo.client
-const mongoRepClient = mongo.client_replica
+const mongo = require('./mongoDatabase.js');
+const checkerValidator = require('./frontend/src/components/validation/checker_validation.js');
+const validationConverter = require('./frontend/src/components/validation/validationConverter.js');
+const mongoClient = mongo.client;
+const mongoRepClient = mongo.client_replica;
 
 
 // This displays message that the server running and listening to specified port
@@ -93,55 +95,60 @@ wsServer.on('connection', (socket,ws_request) => {
     //ParsedData sent back:
     const parsedData = JSON.parse(data.toString());
 
-    //Create Room:
-    if(parsedData.query_type === 'create_room'){
-      mongoDBremove(['rooms', {admin_session: ws_request.session.uuid}]);
+    switch(parsedData.query_type) {
+      case 'create_room':
 
-      //Database Entry Structure:
-      const insertData =  {                                   
-        _id : id_generator(), //Insert Data into Collection [0]
-        room_name : parsedData.room_name,
-        admin_session: ws_request.session.uuid,
-        guest_session : '',
-        game_board: '0202020220202020020202020000000000000000101010100101010110101010'.split(''), //8 x 8 Checkers grid (1D array), 0 = Empty spot, 1 = red, 2 = black
-        turn: null //null: Game isn't authed , false: Guest's turn , true: Admin's turn
+        //Delete any previous rooms created by Host user: (admin user)
+        mongoDBremove(['rooms', {admin_session: ws_request.session.uuid}]);
 
-      }
+        // DB ENTRY Structure:
+        const insertData =  {                                   
+          _id : id_generator(), //Insert Data into Collection [0]
+          room_name : parsedData.room_name,
+          admin_session: ws_request.session.uuid,
+          guest_session : '',
+          game_board: '0202020220202020020202020000000000000000101010100101010110101010'.split('').map(Number), //8 x 8 Checkers grid (1D array), 0 = Empty spot, 1 = red, 2 = black
+          turn: null //null: Game isn't authed , false: Guest's turn , true: Admin's turn
+  
+        }
 
-      await mongoDBinsert([ 'rooms', insertData]);
+        await mongoDBinsert([ 'rooms', insertData]);
       
-      console.log(insertData);
-      socket.send(JSON.stringify({'room_url': insertData._id}) );
-      socket.close();
-      console.log('This request is to create a room.')
-    
-    //Guest first time authentication:
-    } else if(parsedData.query_type === 'guest_fta'){
-      const findRoom = await mongoDBsearch(['rooms',{_id: parsedData.room_id}]); //This obj is wrapped in an array, please reference findRoom as findRoom[0]
-      console.log('GUEST has authenticated')
-      await mongoDBupdate('rooms',{_id : findRoom[0]._id }, { $set : { guest_session : ws_request.session.uuid , turn : true } }, {upsert: false})
+        socket.send(JSON.stringify({'room_url': insertData._id}) );
+        socket.close();
 
-      console.log(findRoom);
-      socket.send('yup!');
+      case 'guest_fta':
+        //Guest's First Time Authentication:
+        const findRoom = await mongoDBsearch(['rooms',{_id: parsedData.room_id}]); //This obj is wrapped in an array, please reference findRoom as findRoom[0]
+          if(findRoom[0] != undefined){
+          await mongoDBupdate('rooms',{_id : findRoom[0]._id }, { $set : { guest_session : ws_request.session.uuid , turn : true } }, {upsert: false});
+          }
+        socket.send('guest_fta_return');
+        socket.close();
+      case 'movement':
+        //When either user moves:
+        const selectedRoom = await mongoDBsearch(['rooms',{_id : parsedData.room_id} ]);
+        console.log("Movement Detected: "+selectedRoom[0].turn);
 
-      console.log(wsServer.clients.size);
+        let parsedBoard = selectedRoom[0].game_board
+        const boardValidation = checkerValidator.checkBoard(parsedBoard,parsedData.movement.old);
 
-    } else if(parsedData.query_type === 'movement'){
-      console.log('MOVEMENT INCOMING:')
-      const selectedRoom = await mongoDBsearch(['rooms',{_id : parsedData.room_id} ]);
+        const newBoard = validationConverter.Converter(parsedBoard, 
+                                                      boardValidation,
+                                                      parsedData.movement.old,
+                                                      parsedData.movement.new);
+        console.log(newBoard);
+        
+        await mongoDBupdate(
+          'rooms',
+          {_id : selectedRoom[0]._id},
+          {$set : {game_board : newBoard, turn : true ? false : true} }, {upsert: false}
+        )
       
-      // if(socket.sess_id === parsedData.admin_session){
 
-      // } else if(socket.sess_id === parsedData.guest_session){
-
-      // } 
-
-
-      console.log(selectedRoom);
-    
+        console.log(parsedBoard);
+        console.log(boardValidation);
     }
-
-
 
     console.log(socket.sess_id); 
     console.log(parsedData); 
@@ -172,6 +179,18 @@ const mongoMonitor = async (pipeline) => {
     }
 
     if(next.updateDescription.updatedFields.game_board){
+
+      const findRoom = await mongoDBsearch(['rooms',{_id: next.documentKey._id}]);
+      console.log(findRoom)
+
+      for(const c of wsServer.clients){
+        
+        if(c.sess_id === findRoom[0].admin_session || c.sess_id === findRoom[0].guest_session){
+          c.send(JSON.stringify({action_type: 'movementResult',perm: c.sess_id === findRoom[0].admin_session ? true : false,game_board: findRoom[0].game_board,}));
+        }
+      }
+
+
       console.log('game board has been edited')
 
     }

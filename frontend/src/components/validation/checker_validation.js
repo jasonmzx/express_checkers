@@ -32,7 +32,10 @@ const checkBoard = (board, pawnCoord, justKilled) => {
                 res.push([o]);
                 foundKill = true;
             }
-            else if(Math.abs(board[pawnCoord + o]) === 3 - Math.abs(p) && board[pawnCoord + o * 2] === 0){ //kill scenario
+            else if(Math.abs(board[pawnCoord + o]) === 3 - Math.abs(p) //Pawns need to be opposite
+                    && board[pawnCoord + o * 2] === 0 //empty spot at destination
+                    && Math.abs( Math.floor(pawnCoord/8) - Math.floor( (pawnCoord + o * 2)/8 ) ) === 2 //new Kill spot must be 2 rows away from og spot
+                ){ //kill scenario
                 foundKill = true;
                 //edit board
                 board[pawnCoord] = 0;
@@ -56,6 +59,7 @@ const checkBoard = (board, pawnCoord, justKilled) => {
 
     return res;
 }
+
 
 // console.log(checkBoard(gameboard,42))
 

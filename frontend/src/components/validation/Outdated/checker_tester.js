@@ -1,5 +1,7 @@
-const vC = require('./validationConverter.js');
+const vC = require('../validationConverter.js');
 const converter = vC.Converter;
+
+//kings -1, -2
 
 const gameboard = [
     0,0,0,2,0,2,0,2,  //  7
@@ -36,7 +38,6 @@ const checkBoard = (board, pawnCoord, justKilled) => {
     let res = [];
     let foundKill = false; //If this flag is negative after the for of loop, the recursion stops.
     for(let o of offsets){
-        console.log('spot' + o)
         let checkSpot = pawnCoord + o;
         if( Math.abs( Math.floor(pawnCoord/8) - Math.floor(checkSpot/8)) === 1 && 0 <= checkSpot && checkSpot <= 63){
        // if(Math.floor(checkSpot/8) !== Math.floor(pawnCoord/8) && 0 <= checkSpot && checkSpot <= 63){
@@ -44,12 +45,10 @@ const checkBoard = (board, pawnCoord, justKilled) => {
                 res.push([o]);
                 foundKill = true;
             }
-            else if(Math.abs(board[pawnCoord + o]) === 3 - Math.abs(p) 
-                    && board[pawnCoord + o * 2] === 0 
-                    && Math.abs( Math.floor(pawnCoord/8) - Math.floor( (pawnCoord + o * 2)/8 ) ) === 2
-                    //&&  Math.abs( Math.floor(pawnCoord/8) - Math.floor( (pawnCoord + o * 2)/8 ) === 2 )
+            else if(Math.abs(board[pawnCoord + o]) === 3 - Math.abs(p) //Pawns need to be opposite
+                    && board[pawnCoord + o * 2] === 0 //empty spot at destination
+                    && Math.abs( Math.floor(pawnCoord/8) - Math.floor( (pawnCoord + o * 2)/8 ) ) === 2 //new Kill spot must be 2 rows away from og spot
                 ){ //kill scenario
-                console.log('gets here once?')
                 foundKill = true;
                 //edit board
                 board[pawnCoord] = 0;
