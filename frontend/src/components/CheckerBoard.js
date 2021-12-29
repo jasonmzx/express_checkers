@@ -10,6 +10,7 @@ import selectedRedPawn from '../graphics/selected_red_pawn.png'
 
 import checker_validation from './validation/checker_validation'
 import { tokenChars } from 'ws/lib/validation'
+import { parse } from 'uuid'
 export default class CheckerBoard extends Component {
     state = {
         gameBoard: this.props.gameData,
@@ -51,13 +52,13 @@ export default class CheckerBoard extends Component {
 
 
         for(let v of valid){
+            let entry = this.state.dispOverlay
             if(Math.abs(v) < 14){
-                let entry = this.state.dispOverlay
-                entry[parseInt(coord1D)+parseInt(v)] = false //false is move, true is kill
-                
-                this.setState({dispOverlay : entry});
-                console.log(this.state.dispOverlay);
+                entry[parseInt(coord1D)+parseInt(v)] = false; //false is move, true is kill
+            } else {
+                entry[parseInt(coord1D)+parseInt(v)] = true;
             }
+            this.setState({dispOverlay : entry});
         }
     }
 
@@ -75,7 +76,10 @@ export default class CheckerBoard extends Component {
                     {
                         query_type : 'movement',
                         room_id : (window.location.pathname).slice(6),
-                        movement: {old: this.state.dispOverlay['selectedPawn'], new: coord1D}    
+                        movement: {
+                            old: this.state.boardInv ? 63-this.state.dispOverlay['selectedPawn'] : this.state.dispOverlay['selectedPawn'], 
+                            new: this.state.boardInv ? 63-coord1D : coord1D
+                        }    
                     }
                 ))
             }
@@ -132,6 +136,7 @@ export default class CheckerBoard extends Component {
 
                     if( (Object.keys(this.state.dispOverlay)).includes(index.toString()) ){
                         if(this.state.dispOverlay[index]){   
+                            return this.renderTile('kill_tile',parseInt(elm),index,selectedCheck)
                         }
                         else {
                             return this.renderTile('move_tile',parseInt(elm),index,selectedCheck)

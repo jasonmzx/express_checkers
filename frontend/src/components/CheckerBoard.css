@@ -44,6 +44,18 @@
     image-rendering: pixelated;
 }
 
+.kill_tile {
+    width: 5vw;
+    height: 5vw;
+    padding: 0;
+    margin: 0;
+    z-index: 10;    
+    background-color: transparent;
+    background: url('../graphics/move_tile.png')  no-repeat center center; 
+    background-size: cover;
+    image-rendering: pixelated;
+}
+
 .pawn{
     background-color: transparent;
     position: relative;
