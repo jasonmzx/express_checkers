@@ -7,6 +7,7 @@ const port = process.env.PORT || 5000;
 const mongo = require('./mongoDatabase.js');
 const checkerValidator = require('./frontend/src/components/validation/checker_validation.js');
 const validationConverter = require('./frontend/src/components/validation/validationConverter.js');
+const { parse } = require('uuid');
 const mongoClient = mongo.client;
 const mongoRepClient = mongo.client_replica;
 
@@ -116,7 +117,7 @@ wsServer.on('connection', (socket,ws_request) => {
       
         socket.send(JSON.stringify({'room_url': insertData._id}) );
         socket.close();
-
+        break;
       case 'guest_fta':
         //Guest's First Time Authentication:
         const findRoom = await mongoDBsearch(['rooms',{_id: parsedData.room_id}]); //This obj is wrapped in an array, please reference findRoom as findRoom[0]
@@ -125,29 +126,70 @@ wsServer.on('connection', (socket,ws_request) => {
           }
         socket.send('guest_fta_return');
         socket.close();
+        break;
       case 'movement':
+
+        const pawnType = {
+          admin: [1 , -1],
+          guest: [2, -2]
+        }
+
         //When either user moves:
         const selectedRoom = await mongoDBsearch(['rooms',{_id : parsedData.room_id} ]);
+        let parsedBoard = selectedRoom[0].game_board;
+
+
+        let movementValid = async () => {
+          const boardValidation = checkerValidator.checkBoard(parsedBoard,parsedData.movement.old);
+
+          const newBoard = validationConverter.Converter(
+            parsedBoard, 
+            boardValidation,
+            parsedData.movement.old,
+            parsedData.movement.new
+          );
+
+          await mongoDBupdate(
+            'rooms',
+            {_id : selectedRoom[0]._id},
+            {$set : {game_board : newBoard, turn : !selectedRoom[0].turn } }, {upsert: false}
+          );
+
+        }
+
+
+
+        if(ws_request.session.uuid == selectedRoom[0].admin_session 
+          && selectedRoom[0].turn 
+          && pawnType.admin.includes(selectedRoom[0].game_board[parsedData.movement.old])  //Admin
+        ){   
+        console.log('VALIDATED ADMIN TURN');
+        movementValid();
+
+        } else if(ws_request.session.uuid == selectedRoom[0].guest_session 
+                && !selectedRoom[0].turn
+                && pawnType.guest.includes(selectedRoom[0].game_board[parsedData.movement.old]) 
+        ){ //Guest
+        console.log('VALIDATED GUEST TURN');
+        movementValid();
+        
+
+
+        }
+
+
+
         console.log("Movement Detected: "+selectedRoom[0].turn);
 
-        let parsedBoard = selectedRoom[0].game_board
-        const boardValidation = checkerValidator.checkBoard(parsedBoard,parsedData.movement.old);
-
-        const newBoard = validationConverter.Converter(parsedBoard, 
-                                                      boardValidation,
-                                                      parsedData.movement.old,
-                                                      parsedData.movement.new);
-        console.log(newBoard);
+       
         
-        await mongoDBupdate(
-          'rooms',
-          {_id : selectedRoom[0]._id},
-          {$set : {game_board : newBoard, turn : true ? false : true} }, {upsert: false}
-        )
+
       
+        
 
         console.log(parsedBoard);
         console.log(boardValidation);
+        break;
     }
 
     console.log(socket.sess_id); 

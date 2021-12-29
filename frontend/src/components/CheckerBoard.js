@@ -50,13 +50,28 @@ export default class CheckerBoard extends Component {
 
         console.log('Validated: '+JSON.stringify(valid))
 
+        const reducerSum = (pV, cV) => pV + cV;
 
         for(let v of valid){
-            let entry = this.state.dispOverlay
-            if(Math.abs(v) < 14){
+            let entry = this.state.dispOverlay;
+            
+            if(Math.abs(v[0]) < 14){
                 entry[parseInt(coord1D)+parseInt(v)] = false; //false is move, true is kill
             } else {
-                entry[parseInt(coord1D)+parseInt(v)] = true;
+
+                for(let [i,e] of v.entries()){
+
+                    const killEntry = parseInt(coord1D)+v.slice(0,i+1).reduce(reducerSum,0);
+                    entry[killEntry] = true
+
+                }
+
+
+
+
+                //Returns the possible positions of selected Pawn (for every possibility)
+
+                //entry[parseInt(coord1D)+parseInt(v)] = true;
             }
             this.setState({dispOverlay : entry});
         }

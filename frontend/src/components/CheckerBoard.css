@@ -51,7 +51,7 @@
     margin: 0;
     z-index: 10;    
     background-color: transparent;
-    background: url('../graphics/move_tile.png')  no-repeat center center; 
+    background: url('../graphics/kill_tile.png')  no-repeat center center; 
     background-size: cover;
     image-rendering: pixelated;
 }
