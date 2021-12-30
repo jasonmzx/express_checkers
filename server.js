@@ -161,8 +161,8 @@ wsServer.on('connection', (socket,ws_request) => {
 
         if(ws_request.session.uuid == selectedRoom[0].admin_session 
           && selectedRoom[0].turn 
-          && pawnType.admin.includes(selectedRoom[0].game_board[parsedData.movement.old])  //Admin
-        ){   
+          && pawnType.admin.includes(selectedRoom[0].game_board[parsedData.movement.old])  
+        ){  //Admin
         console.log('VALIDATED ADMIN TURN');
         movementValid();
 
@@ -175,20 +175,16 @@ wsServer.on('connection', (socket,ws_request) => {
         
 
 
+        } else {
+          socket.send()
+
+
         }
 
 
 
         console.log("Movement Detected: "+selectedRoom[0].turn);
 
-       
-        
-
-      
-        
-
-        console.log(parsedBoard);
-        console.log(boardValidation);
         break;
     }
 
@@ -228,7 +224,8 @@ const mongoMonitor = async (pipeline) => {
       for(const c of wsServer.clients){
         
         if(c.sess_id === findRoom[0].admin_session || c.sess_id === findRoom[0].guest_session){
-          c.send(JSON.stringify({action_type: 'movementResult',perm: c.sess_id === findRoom[0].admin_session ? true : false,game_board: findRoom[0].game_board,}));
+          c.send(JSON.stringify({action_type: 'movementResult',perm: c.sess_id === findRoom[0].admin_session ? true : false,game_board: findRoom[0].game_board, turn : findRoom[0].turn}));
+
         }
       }
 
@@ -314,6 +311,7 @@ app.get('/createroom', async (req,res) => {
 app.get('/aboutus', (req, res) => { 
   res.send({ express: 'YOUR EXPRESS BACKEND IS CONNECTED TO REACT' }); 
 }); 
+
 
 app.get('/menu', (req,res) => {
   console.log('Menu has been reached');

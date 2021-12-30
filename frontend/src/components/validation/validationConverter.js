@@ -31,7 +31,7 @@ let Converter = (board, validation,oldPawn,newPawn) => {
         if(Math.abs(vJ) < 14 ){ //Move scenario (no kill)
                 board[oldPawn] = 0;
                 board[pJ] = pC;
-                return board;
+                //return board;
         } else {
 
                 board[pJ + 
@@ -41,7 +41,7 @@ let Converter = (board, validation,oldPawn,newPawn) => {
                 if(newPawn === pJ) {
                     board[oldPawn] = 0;
                     board[pJ] = pC;
-                    return board;
+                    //return board;
                 }
 
         }   //end of else 
@@ -49,7 +49,21 @@ let Converter = (board, validation,oldPawn,newPawn) => {
         }    //end of loop
 
 
-        return;
+    //Check for a new king
+
+    //Black
+        for(let b = 0 ; 8 > b; b++){
+            if(board[b] === 1){board[b] = -1;}
+        }
+
+    //Red
+        for(let b = 56; 64 > b; b++){
+            if(board[b] === 2){board[b] = -2;}
+        }
+
+
+
+        return board;
 
 
 

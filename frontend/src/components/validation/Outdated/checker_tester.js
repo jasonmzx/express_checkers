@@ -4,17 +4,18 @@ const converter = vC.Converter;
 //kings -1, -2
 
 const gameboard = [
-    0,0,0,2,0,2,0,2,  //  7
+    0,0,0,2,0,2,0,-2,  //  7
     2,0,2,0,0,0,1,0,  // 15
     0,2,0,0,0,0,0,0,  // 23
-    0,0,0,0,1,0,2,0,  // 31
-    0,0,0,0,0,0,0,0,  // 39
-    1,0,1,0,1,0,2,0, // 47
+    0,0,0,0,0,0,2,0,  // 31
+    0,0,0,1,0,0,0,0,  // 39
+    1,0,0,0,1,0,2,0, // 47
     0,1,0,1,0,1,0,1, // 55
-    1,0,1,0,1,0,1,0, // 63   
+    0,0,1,0,1,0,1,0, // 63   
  ]
 
 const displayBoard = (board) => {
+    console.log(board);
     console.log('beginning:')
 
     for(let i = 0; i < 8; i++){
@@ -83,9 +84,9 @@ console.log('?')
 //displayBoard(converter(gameboard, checkBoard(gameboard,55),55,1 ));
 
 
-
+console.log(checkBoard(gameboard,7));
 //console.log(checkBoard(gameboard,7));
-displayBoard(converter(gameboard, checkBoard(gameboard,7),7,21 ))
+//displayBoard(converter(gameboard, checkBoard(gameboard,14),14,56 ))
 
 // module.exports = {
 //     checkBoard

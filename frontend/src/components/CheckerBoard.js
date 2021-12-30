@@ -4,9 +4,13 @@ import BlackTilePNG from '../graphics/black_tile.png'
 import WhiteTilePNG from '../graphics/white_tile.png'
 import BlackPawn from '../graphics/black_pawn.png'
 import RedPawn from '../graphics/red_pawn.png'
+import KingBlackPawn from '../graphics/king_black_pawn.png'
+import KingRedPawn from '../graphics/king_red_pawn.png'
 
 import selectedBlackPawn from '../graphics/selected_black_pawn.png'
 import selectedRedPawn from '../graphics/selected_red_pawn.png'
+import selectedKingBlackPawn from '../graphics/selected_king_black_pawn.png'
+import selectedKingRedPawn from '../graphics/selected_king_red_pawn.png'
 
 import checker_validation from './validation/checker_validation'
 import { tokenChars } from 'ws/lib/validation'
@@ -129,7 +133,15 @@ export default class CheckerBoard extends Component {
             return <div className={tileColor} onClick={this.tileClick} Id={'box-'+coords}>
                 <div className='pawn'> <img onClick={this.pawnClick} className='pawn_img' src={selected ? selectedRedPawn : RedPawn} Id={'pawn-'+coords}/> </div>
             </div>       
-        } 
+        } else if (pawn === -1){
+            return <div className={tileColor} onClick={this.tileClick} Id={'box-'+coords}>
+            <div className='pawn'> <img onClick={this.pawnClick} className='pawn_img' src={selected ? selectedKingBlackPawn : KingBlackPawn} Id={'pawn-'+coords}/> </div>
+        </div>        
+        } else if (pawn === -2){
+            return <div className={tileColor} onClick={this.tileClick} Id={'box-'+coords}>
+            <div className='pawn'> <img onClick={this.pawnClick} className='pawn_img' src={selected ? selectedKingRedPawn : KingRedPawn} Id={'pawn-'+coords}/> </div>
+        </div>   
+        }
     }
 
     componentDidUpdate(){

@@ -11,7 +11,8 @@ export default class GameRoom extends Component {
         g_auth: null,
         boardInversed: null,
         gameBoard: null,
-        url: window.location.pathname
+        url: window.location.pathname,
+        turn: true,
     };
 
 
@@ -39,21 +40,20 @@ export default class GameRoom extends Component {
 
                     this.setState({
                         userResponseData : this.state.gameBoard ? `your opponent is here` : 'Waiting for opponent... '
-                    })
+                    });
                     
                 } else { //If guest:
 
                     if( this.state.guest[1] === true){ //If FTA is true
-                        console.log("REACHING ?? ADMIN !!!")
+                        console.log("It's your first time Authenticating!")
                         socket.send(JSON.stringify({
                             query_type: 'guest_fta',
                             room_id: (window.location.pathname).slice(6)
                         }));
 
                         this.setState({guest: [this.state.guest[0], false] }) //Falisfies FTA state
-                        return
-                    } 
-                    
+                        window.location.reload(false); //There is probably a better way to fix this
+                     } 
                     this.setState({userResponseData: 'Welcome back, guest'})
                     
                 }
@@ -68,7 +68,9 @@ export default class GameRoom extends Component {
 
 
                 if(socketData.action_type === 'movementResult'){
-                    this.setState({gameBoard : socketData.game_board});
+                    console.log('RESULT : ');
+                    console.log(socketData.turn);
+                    this.setState({gameBoard : socketData.game_board, turn: socketData.turn});
                     this.renderBoard();
                 }
 
@@ -90,7 +92,7 @@ export default class GameRoom extends Component {
             }
 
         } catch(err){
-            console.log(err) //Handle Error by throwing it as text in console
+            console.log(err) //Handle Error by throwing it as string in console
         }
     }
 
@@ -125,12 +127,32 @@ export default class GameRoom extends Component {
     };
 
 
+
     render() {
+
+        if(this.state.guest){
+            console.log('loaded in ! ' + this.state.guest);
+            //              Put into return statement for DEBUG     {this.state.turn ? "TRUE" : "FALSE"} 
+            return (
+                <div className="main">
+                    {this.renderBoard()}
+                    
+                    <p className="welcome"> 
+
+                    {
+                    this.state.guest[0] ? (this.state.turn ? "It's your opponent's turn." : "It's your turn, move!") : (this.state.turn ? "It's your turn, move!" : "It's your opponent's turn.")
+                    
+                    }</p>
+    
+                </div>
+            )
+        }
+
         return (
             <div className="main">
                 {this.renderBoard()}
                 
-                <p className="welcome">Welcome to your checkers game! {this.state.userResponseData}</p>
+                <p className="welcome"> {this.state.turn ? "TRUE" : "FALSE"} Loading</p>
 
             </div>
         )
