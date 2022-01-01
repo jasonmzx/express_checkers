@@ -33,7 +33,9 @@ export default class GameRoom extends Component {
             this.setState({guest: [backendResp.valid.guest,backendResp.valid.fta] })
 
             // WS Connection:
-            const socket = new WebSocket("ws:"+(window.location.href).split(':')[1]+':5000');
+            const socketProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+
+            const socket = new WebSocket(socketProtocol+(window.location.href).split(':')[1]+':5000');
 
             socket.onopen = () => {
                 if( backendResp.valid.guest === false ){ //If admin
@@ -152,7 +154,7 @@ export default class GameRoom extends Component {
             <div className="main">
                 {this.renderBoard()}
                 
-                <p className="welcome"> {this.state.turn ? "TRUE" : "FALSE"} Loading</p>
+                <p className="welcome"> {this.state.turn ? "TRUE" : "FALSE"} Loading {this.state.userResponseData}</p>
 
             </div>
         )

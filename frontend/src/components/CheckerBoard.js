@@ -88,7 +88,9 @@ export default class CheckerBoard extends Component {
         if(Object.keys(this.state.dispOverlay).includes(coord1D.toString()) ){ 
 
             //Checker Board Socket Auth:
-            const socket = new WebSocket("ws:"+(window.location.href).split(':')[1]+':5000');
+            const socketProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+
+            const socket = new WebSocket(socketProtocol+(window.location.href).split(':')[1]+':5000');
 
             socket.onopen = () => {
                 socket.send(JSON.stringify(
