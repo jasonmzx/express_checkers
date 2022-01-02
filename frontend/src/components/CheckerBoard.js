@@ -12,7 +12,9 @@ import selectedRedPawn from '../graphics/selected_red_pawn.png'
 import selectedKingBlackPawn from '../graphics/selected_king_black_pawn.png'
 import selectedKingRedPawn from '../graphics/selected_king_red_pawn.png'
 
-import checker_validation from './validation/checker_validation'
+import { checkBoard } from './validation/checker_validation'
+//import checker_validation from './validation/checker_validation'
+//import { checker_validation } from './validation/checker_validation'
 import { tokenChars } from 'ws/lib/validation'
 import { parse } from 'uuid'
 export default class CheckerBoard extends Component {
@@ -36,13 +38,7 @@ export default class CheckerBoard extends Component {
 
         const newGame = [...(this.state.gameBoard.map((e)=> {return parseInt(e)}))]
 
-        console.log('PAWN CLICK DEBUG:');
-        console.log('Game Board:');
-        console.log(newGame);
-        console.log('Coord 1D');
-        console.log(coord1D);
-
-        let valid = this.state.boardInv ? checker_validation.checkBoard(newGame.reverse(),63-coord1D) : checker_validation.checkBoard(newGame, coord1D);
+        let valid = this.state.boardInv ? checkBoard(newGame.reverse(),63-coord1D) : checkBoard(newGame, coord1D);
 
         if(this.state.boardInv){
             valid = [...valid.map((e) => {return e.map( (j) => {return -1*j} )  })];
