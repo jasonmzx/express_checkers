@@ -63,8 +63,8 @@ const checkBoard = (board, pawnCoord, justKilled) => {
 
 // console.log(checkBoard(gameboard,42))
 
-export { checkBoard }
+// export { checkBoard }
 
-// module.exports = {
-//     checkBoard
-// }
+module.exports = {
+    checkBoard
+}

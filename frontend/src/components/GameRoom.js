@@ -19,9 +19,12 @@ export default class GameRoom extends Component {
     AuthenticateUser = async () => {
         try{
             
+            console.log('trying: '+this.state.url);
             //Call API
             const backendResp = await this.callBackendAPI();
             
+            console.log(backendResp);
+
             //If Error, throw it
             if(backendResp.error){
                 this.setState({userResponseData: backendResp.error})
@@ -105,7 +108,11 @@ export default class GameRoom extends Component {
     } //End of componentDidMount
     
     callBackendAPI = async () => {
-        const response = await fetch(this.state.url);
+        const response = await fetch(
+            'http://localhost:5000'+this.state.url, {
+                credentials: 'include'
+              }
+        );
         const body = await response.json();
     
         if (response.status !== 200) {

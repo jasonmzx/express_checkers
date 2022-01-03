@@ -5,9 +5,13 @@ const session = require('express-session'); //express sessions
 const uuid = require('uuid');
 const port = process.env.PORT || 5000; 
 const mongo = require('./mongoDatabase.js');
-const checkerValidator = require('./frontend/src/components/validation/checker_validation.js');
+const cors = require('cors');
+const checkerValidator = require('./backendCheckValidation.js');
 const validationConverter = require('./frontend/src/components/validation/validationConverter.js');
+
 const { parse } = require('uuid');
+
+
 const mongoClient = mongo.client;
 const mongoRepClient = mongo.client_replica;
 
@@ -98,7 +102,7 @@ wsServer.on('connection', (socket,ws_request) => {
 
     switch(parsedData.query_type) {
       case 'create_room':
-
+        console.log('get here?')
         //Delete any previous rooms created by Host user: (admin user)
         mongoDBremove(['rooms', {admin_session: ws_request.session.uuid}]);
 
@@ -112,6 +116,7 @@ wsServer.on('connection', (socket,ws_request) => {
           turn: null //null: Game isn't authed , false: Guest's turn , true: Admin's turn
   
         }
+        console.log(insertData)
 
         await mongoDBinsert([ 'rooms', insertData]);
       
@@ -120,7 +125,9 @@ wsServer.on('connection', (socket,ws_request) => {
         break;
       case 'guest_fta':
         //Guest's First Time Authentication:
+        
         const findRoom = await mongoDBsearch(['rooms',{_id: parsedData.room_id}]); //This obj is wrapped in an array, please reference findRoom as findRoom[0]
+        console.log(findRoom) // Debug
           if(findRoom[0] != undefined){
           await mongoDBupdate('rooms',{_id : findRoom[0]._id }, { $set : { guest_session : ws_request.session.uuid , turn : true } }, {upsert: false});
           }
@@ -250,15 +257,28 @@ mongoMonitor([{
 
 app.use(express_session);
 
+
+var corsOptions = {
+  origin: 'http://localhost:3000',
+  credentials : true,
+   // some legacy browsers (IE11, various SmartTVs) choke on 204
+}
+
+app.use(cors(corsOptions));
+//app.use(express.static('./frontend/build'));
+
 app.get('/sessionhandler', async (req,res) => {
+  console.log('Initial SESSION:')
+  console.log(req.session);
+
   if( !(req.session.uuid) ){
     req.session.uuid = uuid.v4();
     console.log('session: '+req.session.uuid+' created @ /sessionhandler');
-    console.log('URL: '+req.query.valid)
   } else {
     console.log('session UUID exists @ /sessionhandler')
   }
-  res.send();
+  req.push();
+  res.send('{success: true}');
 });
 
 // create a GET route

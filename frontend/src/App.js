@@ -15,17 +15,21 @@ class App extends Component {
 
   //This will call the session manager
   componentDidMount = async () => {
-    try{
         await this.callBackendAPI();
         console.log('Session loaded!')
-    } catch(err){
-        console.log(err);
-    }
+
 }
 
 callBackendAPI = async () => {
-    const response = await fetch('/sessionhandler');
+    console.log('App.js URL:');
+    console.log(this.state.url);
+    const response = await fetch('http://localhost:5000/sessionhandler', {
+      credentials: 'include'
+    });
+
     const body = await response.json();
+    console.log(body);
+    console.log(response.status);
 
     if (response.status !== 200) {
       throw Error(body.message) 
