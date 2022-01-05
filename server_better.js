@@ -45,8 +45,9 @@ wsServer.on('connection', (socket,ws_request) => {
   socket.on('message', async (data) => {
     //ParsedData sent back:
     const parsedData = JSON.parse(data.toString());
+    console.log(parsedData);
 
-    socket.send( socketHandler.OnMessage(parsedData, ws_request, mongoClient) );
+    socket.send( await socketHandler.OnMessage(parsedData, ws_request, mongoClient) );
     
     //debug
     console.log(socket.sess_id); 
@@ -96,3 +97,52 @@ app.get('/sessionhandler', async (req,res) => {
   res.send('{success: true}');
 });
 
+// create a GET route
+app.get('/game/:roomId',async (req,res) =>{
+  //Url Params:
+  const roomId = req.params.roomId;
+
+  //Search for roomId's matching the URL param in rooms collection:
+  const roomData = await mongoPull.Search(mongoClient,'rooms',{_id: roomId});
+  console.log(`ROOM QUERY! ${roomData[0]}`)
+  if( !((roomData).length) ){
+    res.send({error: `room doesn't exist`});
+  }
+  //IF GUEST
+  //
+  else if ( !((await mongoPull.Search(mongoClient,'rooms',{_id: roomId,admin_session: req.session.uuid})).length) ){
+    console.log('Not an admin')
+    if( !(roomData[0].guest_session)  ){
+      //First time authentication of a guest, (f_irst t_ime a_uth (fta) is true, so is guest)
+      res.send({valid: {guest:true, fta: true, gameBoard: roomData[0].game_board} }); 
+      //Update room row
+    } else {
+      if(roomData[0].guest_session == req.session.uuid){
+        console.log('Guest has re-joined');
+        res.send({valid: {guest:true, fta: false, gameBoard: roomData[0].game_board}});
+      } else {
+        res.send({error: `You aren't authorized to join.`});
+      }
+
+    }
+
+  //IF IS ADMIN
+  //
+  } else {
+    console.log('/game/'+roomId+' result:')
+    console.log(roomData[0].guest_session)
+    //If the roomData has a guest_session that isn't '' (false)
+    if(roomData[0].guest_session){
+      res.send({valid: {guest:false,gameBoard:roomData[0].game_board} }); //Tell frontend that guest is here
+    } else{
+      res.send({valid: {guest:false} }); //Tell frontend that guest isn't here
+    }
+  }
+});
+
+//Express server WS upgrade handling
+expressServer.on('upgrade', (request, socket, head) => {
+  wsServer.handleUpgrade(request, socket, head, socket => {
+    wsServer.emit('connection', socket, request);
+  });
+});
