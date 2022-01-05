@@ -32,11 +32,10 @@ const OnMessage = async (parsedData,ws_request,mongoClient) => {
             
             const findRoom = await mongoPull.Search(mongoClient,'rooms',{_id: parsedData.room_id}); //This obj is wrapped in an array, please reference findRoom as findRoom[0]
             console.log(findRoom) // Debug
-              if(findRoom[0] != undefined){
-              await mongoPull.Update(mongoClient,'rooms',{_id : findRoom[0]._id }, { $set : { guest_session : ws_request.session.uuid , turn : true } }, {upsert: false});
+              if(findRoom != undefined){
+              await mongoPull.Update(mongoClient,'rooms',{_id : findRoom._id }, { $set : { guest_session : ws_request.session.uuid , turn : true } }, {upsert: false});
               }
             socket.send('guest_fta_return');
-            socket.close();
             break;
           case 'movement':
     
@@ -47,7 +46,7 @@ const OnMessage = async (parsedData,ws_request,mongoClient) => {
     
             //When either user moves:
             const selectedRoom = await mongoPull.Search(mongoClient,'rooms',{_id : parsedData.room_id} );
-            let parsedBoard = selectedRoom[0].game_board;
+            let parsedBoard = selectedRoom.game_board;
     
     
             let movementValid = async () => {
@@ -63,24 +62,24 @@ const OnMessage = async (parsedData,ws_request,mongoClient) => {
               await mongoPull.Update(
                 mongoClient,
                 'rooms',
-                {_id : selectedRoom[0]._id},
-                {$set : {game_board : newBoard, turn : !selectedRoom[0].turn } }, {upsert: false}
+                {_id : selectedRoom._id},
+                {$set : {game_board : newBoard, turn : !selectedRoom.turn } }, {upsert: false}
               );
     
             }
     
     
     
-            if(ws_request.session.uuid == selectedRoom[0].admin_session 
-              && selectedRoom[0].turn 
-              && pawnType.admin.includes(selectedRoom[0].game_board[parsedData.movement.old])  
+            if(ws_request.session.uuid == selectedRoom.admin_session 
+              && selectedRoom.turn 
+              && pawnType.admin.includes(selectedRoom.game_board[parsedData.movement.old])  
             ){  //Admin
             console.log('VALIDATED ADMIN TURN');
             movementValid();
     
-            } else if(ws_request.session.uuid == selectedRoom[0].guest_session 
-                    && !selectedRoom[0].turn
-                    && pawnType.guest.includes(selectedRoom[0].game_board[parsedData.movement.old]) 
+            } else if(ws_request.session.uuid == selectedRoom.guest_session 
+                    && !selectedRoom.turn
+                    && pawnType.guest.includes(selectedRoom.game_board[parsedData.movement.old]) 
             ){ //Guest
             console.log('VALIDATED GUEST TURN');
             movementValid();
@@ -88,21 +87,18 @@ const OnMessage = async (parsedData,ws_request,mongoClient) => {
     
     
             } else {
-              socket.send()
+              return
     
     
             }
     
     
     
-            console.log("Movement Detected: "+selectedRoom[0].turn);
+            //console.log("Movement Detected: "+selectedRoom[0].turn);
     
             break;
         }
     
-        console.log(socket.sess_id); 
-        console.log(parsedData); 
-
 
 }
 

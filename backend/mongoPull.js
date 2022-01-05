@@ -10,8 +10,9 @@ const Search = async (mongoClient, queryCollection, query) => {
     const collection = db.collection(queryCollection);
 
     // const query_result = await collection.find(query[1]).toArray();
-    return await collection.find(query).toArray();
-    
+    const res = await collection.find(query).toArray();
+
+    return res[0];
   }
 
 
@@ -120,6 +121,7 @@ const Monitor = async (mongoClient, mongoRepClient, wsServer, pipeline) => {
 
 
 }
+
 
 
 module.exports = {

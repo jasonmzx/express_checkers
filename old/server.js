@@ -4,10 +4,10 @@ const app = express(); //express app
 const session = require('express-session'); //express sessions
 const uuid = require('uuid');
 const port = process.env.PORT || 5000; 
-const mongo = require('./mongoDatabase.js');
+const mongo = require('../mongoDatabase.js');
 const cors = require('cors');
-const checkerValidator = require('./backendCheckValidation.js');
-const validationConverter = require('./frontend/src/components/validation/validationConverter.js');
+const checkerValidator = require('../backendCheckValidation.js');
+const validationConverter = require('../frontend/src/components/validation/validationConverter.js');
 
 const { parse } = require('uuid');
 
