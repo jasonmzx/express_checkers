@@ -125,9 +125,30 @@ export default class GameRoom extends Component {
         if(this.state.gameBoard){
             console.log('PROPS : ');
             let props = {
-                gameData : this.state.guest[0] ? [...this.state.gameBoard.reverse()] : this.state.gameBoard,
+                gameData : null,
                 boardInv : this.state.guest[0] ? true : false
             }
+
+            console.log('GAME BOARD');
+            console.log(props.gameData);
+            console.log('STATE BOARD');
+            console.log(this.state.gameBoard);
+            console.log(props.gameData === this.state.gameBoard ? 'true' : 'false');
+
+
+
+            if(this.state.guest[0]){
+            
+            props.gameData = [...this.state.gameBoard].reverse();
+
+
+            } 
+
+            if(!this.state.guest[0]){
+                props.gameData = [...this.state.gameBoard];
+            }
+
+
             console.log(props)
         return(
             <CheckerBoard {...props}/>
