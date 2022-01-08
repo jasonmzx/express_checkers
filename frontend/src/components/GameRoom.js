@@ -1,7 +1,9 @@
 import React, { Component } from 'react'
 import {useLocation} from "react-router-dom";
 import CheckerBoard from './CheckerBoard';
+import  MovementTimer from './MovementTimer';
 import { CSSProperties } from './GameRoom.css'
+
 
 export default class GameRoom extends Component {
     state = {
@@ -166,7 +168,7 @@ export default class GameRoom extends Component {
             return (
                 <div className="main">
                     {this.renderBoard()}
-                    
+                    <MovementTimer/>
                     <p className="welcome"> 
 
                     {
