@@ -18,7 +18,8 @@ const OnMessage = async (parsedData,ws_request,mongoClient) => {
               admin_session: ws_request.session.uuid,
               guest_session : '',
               game_board: '0202020220202020020202020000000000000000101010100101010110101010'.split('').map(Number), //8 x 8 Checkers grid (1D array), 0 = Empty spot, 1 = red, 2 = black
-              turn: null //null: Game isn't authed , false: Guest's turn , true: Admin's turn
+              turn: null, //null: Game isn't authed , false: Guest's turn , true: Admin's turn
+              last_time: Date.now()
       
             }
             console.log(insertData)
