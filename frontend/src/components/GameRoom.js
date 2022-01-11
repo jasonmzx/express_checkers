@@ -15,6 +15,7 @@ export default class GameRoom extends Component {
         gameBoard: null,
         url: window.location.pathname,
         turn: true,
+        turn_time: null
     };
 
 
@@ -35,7 +36,10 @@ export default class GameRoom extends Component {
 
             //Initially Setting the State:
 
-            this.setState({guest: [backendResp.valid.guest,backendResp.valid.fta] })
+            this.setState({guest: [backendResp.valid.guest,backendResp.valid.fta] , 
+                        turn_time: backendResp.valid.turn_time ? backendResp.valid.turn_time : null, 
+                        last_time : backendResp.valid.last_time ? backendResp.valid.last_time : null  
+                    });
 
             // WS Connection:
             const socketProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
@@ -81,16 +85,18 @@ export default class GameRoom extends Component {
                     this.renderBoard();
                 }
 
-                if(!backendResp.valid.guest){ //If admin:
+                if(socketData.action_type === 'guestFta'){
+                    if(!backendResp.valid.guest){ //If admin:
                     
-                    if(socketData.guest_auth === true){
-                        this.setState({userResponseData: 'Guest has arrived!', gameBoard: socketData.game_board});
-                    }    
-                } else { //If guest:
-
+                        if(socketData.guest_auth === true){
+                            this.setState({userResponseData: 'Guest has arrived!', gameBoard: socketData.game_board, turn_time : socketData.turn_time});
+                        }    
+                    } 
                 }
 
-            }
+
+
+            } //end of socket.onmessage.
 
             if(backendResp.valid.gameBoard){
               
@@ -139,14 +145,13 @@ export default class GameRoom extends Component {
 
 
 
-            if(this.state.guest[0]){
+            if(this.state.guest[0]){ //If guest
             
             props.gameData = [...this.state.gameBoard].reverse();
 
-
             } 
 
-            if(!this.state.guest[0]){
+            if(!this.state.guest[0]){ //If not guest
                 props.gameData = [...this.state.gameBoard];
             }
 
@@ -158,6 +163,26 @@ export default class GameRoom extends Component {
         }
     };
 
+    renderTimer = () => {
+        console.log('Rendering Timer...');
+        console.log(this.state.turn_time);
+        console.log(this.state.last_time);
+
+        if(this.state.turn_time != null){
+            const props = {
+                time : this.state.turn_time
+            }
+
+            return(
+                <MovementTimer {...props}/>
+            )
+        } else {
+            return(
+                <p>Undefined Timer.</p>
+            )
+        }
+    }
+
 
 
     render() {
@@ -168,8 +193,12 @@ export default class GameRoom extends Component {
             return (
                 <div className="main">
                     {this.renderBoard()}
-                    <MovementTimer/>
+                    {this.renderTimer()}
+
+                    {}
                     <p className="welcome"> 
+
+                    {this.state.userResponseData}
 
                     {
                     this.state.guest[0] ? (this.state.turn ? "It's your opponent's turn." : "It's your turn, move!") : (this.state.turn ? "It's your turn, move!" : "It's your opponent's turn.")

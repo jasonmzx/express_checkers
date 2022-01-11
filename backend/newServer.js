@@ -68,7 +68,7 @@ const mongoMonitor = async (pipeline) => {
 
       for(const c of wsServer.clients ){
         if(c.sess_id == findRoom.admin_session){
-          c.send(JSON.stringify({guest_auth : true, game_board: findRoom.game_board}))
+          c.send(JSON.stringify({action_type: 'guestFta',guest_auth : true, game_board: findRoom.game_board, turn_time: findRoom.turn_time, last_time: findRoom.last_time}))
         }
       }
 
@@ -83,7 +83,7 @@ const mongoMonitor = async (pipeline) => {
       for(const c of wsServer.clients){
         
         if(c.sess_id === findRoom.admin_session || c.sess_id === findRoom.guest_session){
-          c.send(JSON.stringify({action_type: 'movementResult',perm: c.sess_id === findRoom.admin_session ? true : false,game_board: findRoom.game_board, turn : findRoom.turn}));
+          c.send(JSON.stringify({action_type: 'movementResult',perm: c.sess_id === findRoom.admin_session ? true : false,game_board: findRoom.game_board, turn : findRoom.turn, last_time: findRoom.last_time}));
 
         }
       }

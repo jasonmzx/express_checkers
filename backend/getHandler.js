@@ -31,7 +31,10 @@ const gameRoomGetter = async (mongoClient, req, roomID) => {
             return {valid: 
                 {guest: true, 
                 fta: true, 
-                gameBoard: roomData.game_board}
+                gameBoard: roomData.game_board,
+                turn_time: roomData.turn_time,
+                last_time: roomData.last_time
+                }
             }
         } 
 
@@ -39,7 +42,10 @@ const gameRoomGetter = async (mongoClient, req, roomID) => {
             return {valid: 
                 {guest: true, 
                 fta: false, 
-                gameBoard: roomData.game_board}
+                gameBoard: roomData.game_board,
+                turn_time: roomData.turn_time,
+                last_time: roomData.last_time
+                }
             }    
         }
 
@@ -53,7 +59,7 @@ const gameRoomGetter = async (mongoClient, req, roomID) => {
             return {valid: {guest: false} }
 
         } else {
-            return {valid: {guest:false,gameBoard:roomData.game_board} }
+            return {valid: {guest:false,gameBoard:roomData.game_board, turn_time: roomData.turn_time, last_time: roomData.last_time} }
 
         }    
 

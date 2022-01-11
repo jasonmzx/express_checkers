@@ -1,7 +1,11 @@
 import React from 'react'
 
-const MovementTimer = () => {
-    const [counter, setCounter] = React.useState(60);
+const MovementTimer = (props) => {
+    const time = parseInt(props.time);
+    console.log('MovementTimer Component');
+    console.log(time);
+
+    const [counter, setCounter] = React.useState(time);
     
     React.useEffect(() => {
         counter > 0 && setTimeout(() => setCounter(counter - 1), 1000);

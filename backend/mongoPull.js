@@ -62,72 +62,12 @@ const Update = async (mongoClient, queryCollection, filter, update, options) => 
 }
 
 
-    //Mongo DB Replica Monitor:
-const Monitor = async (mongoClient, mongoRepClient, wsServer, pipeline) => {
-
-    await mongoRepClient.connect();
-    const collection = mongoRepClient.db('checker_db').collection('rooms');
-    const changeStream = collection.watch(pipeline)
-
-    changeStream.on('change', async(next) => {
-    console.log(next);
-
-        //If the guest_session property is updated: (Guest has authenticated):
-    if(next.updateDescription.updatedFields.guest_session){
-            //Find corresponding table:
-        const findRoom = await Search(mongoClient,'rooms',{guest_session: next.updateDescription.updatedFields.guest_session})[0];
-            
-
-        for(const c of wsServer.clients ){
-
-            if(c.sess_id == findRoom.admin_session){
-                c.send(JSON.stringify( {guest_auth : true, game_board: findRoom.game_board} ));
-            }
-        }
-
-
-    }
-
-    if(next.updateDescription.updatedFields.game_board){
-
-        const findRoom = await Search(mongoClient,'rooms',{_id: next.documentKey._id})[0];    
  
-
-        for(const c of wsServer.clients){
-        
-            if(c.sess_id === findRoom[0].admin_session 
-            || c.sess_id === findRoom[0].guest_session){
-
-                //Send movement results to both users in game:
-                c.send(JSON.stringify(
-                {action_type: 'movementResult',
-                perm: c.sess_id === findRoom.admin_session ? true : false,
-                game_board: findRoom.game_board, 
-                turn : findRoom.turn
-            }
-            ));
-            }
-        }
-
-
-    }
-
-    //useful debug stuff for this next api 
-    //console.log(next.documentKey._id) //Room code (5 char randomized)
-    //console.log(next.updateDescription.updatedFields.guest_session) //Guest Session Key
-
-    }); //End of changeStream.on change
-
-
-
-}
-
-
 
 module.exports = {
     Search,
     Insert,
     Delete,
     Update,
-    Monitor
+
 }

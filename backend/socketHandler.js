@@ -7,7 +7,6 @@ const OnMessage = async (parsedData,ws_request,mongoClient) => {
     
         switch(parsedData.query_type) {
           case 'create_room':
-            console.log('get here?')
             //Delete any previous rooms created by Host user: (admin user)
             mongoPull.Delete(mongoClient,'rooms', {admin_session: ws_request.session.uuid});
     
@@ -19,7 +18,8 @@ const OnMessage = async (parsedData,ws_request,mongoClient) => {
               guest_session : '',
               game_board: '0202020220202020020202020000000000000000101010100101010110101010'.split('').map(Number), //8 x 8 Checkers grid (1D array), 0 = Empty spot, 1 = red, 2 = black
               turn: null, //null: Game isn't authed , false: Guest's turn , true: Admin's turn
-              last_time: Date.now()
+              last_time: null,
+              turn_time : parseInt(parsedData.time_input)
       
             }
             console.log(insertData)
@@ -34,7 +34,7 @@ const OnMessage = async (parsedData,ws_request,mongoClient) => {
             const findRoom = await mongoPull.Search(mongoClient,'rooms',{_id: parsedData.room_id}); //This obj is wrapped in an array, please reference findRoom as findRoom[0]
             console.log(findRoom) // Debug
               if(findRoom != undefined){
-              await mongoPull.Update(mongoClient,'rooms',{_id : findRoom._id }, { $set : { guest_session : ws_request.session.uuid , turn : true } }, {upsert: false});
+              await mongoPull.Update(mongoClient,'rooms',{_id : findRoom._id }, { $set : { guest_session : ws_request.session.uuid , turn : true , last_time: Date.now()} }, {upsert: false});
               }
             socket.send('guest_fta_return');
             break;
