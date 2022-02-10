@@ -82,14 +82,14 @@ export default class GameRoom extends Component {
                     console.log('RESULT : ');
                     console.log(socketData.turn);
                     this.setState({gameBoard : socketData.game_board, turn: socketData.turn});
-                    this.renderBoard();
+                    //this.renderBoard();
                 }
 
                 if(socketData.action_type === 'guestFta'){
                     if(!backendResp.valid.guest){ //If admin:
                     
                         if(socketData.guest_auth === true){
-                            this.setState({userResponseData: 'Guest has arrived!', gameBoard: socketData.game_board, turn_time : socketData.turn_time});
+                            this.setState({userResponseData: 'Guest has arrived!', gameBoard: socketData.game_board, turn_time : socketData.turn_time, last_time: socketData.last_time});
                         }    
                     } 
                 }
@@ -164,13 +164,13 @@ export default class GameRoom extends Component {
     };
 
     renderTimer = () => {
-        console.log('Rendering Timer...');
-        console.log(this.state.turn_time);
-        console.log(this.state.last_time);
+        console.log('RE RENDER?????')
 
-        if(this.state.turn_time != null){
+        if(this.state.turn_time != null && this.state.last_time != null){
             const props = {
-                time : this.state.turn_time
+                time : this.state.turn_time,
+                last_time : this.state.last_time
+
             }
 
             return(

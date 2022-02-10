@@ -73,7 +73,7 @@ const OnMessage = async (parsedData,ws_request,mongoClient) => {
     
             const maxTime = selectedRoom.last_time + 1000*selectedRoom.turn_time
     
-            if(ws_request.session.uuid == selectedRoom.admin_session 
+            if(ws_request.session.uuid === selectedRoom.admin_session 
               && selectedRoom.turn 
               && pawnType.admin.includes(selectedRoom.game_board[parsedData.movement.old])  
               && maxTime >= Date.now()
@@ -81,7 +81,7 @@ const OnMessage = async (parsedData,ws_request,mongoClient) => {
             console.log('VALIDATED ADMIN TURN');
             movementValid();
     
-            } else if(ws_request.session.uuid == selectedRoom.guest_session 
+            } else if(ws_request.session.uuid === selectedRoom.guest_session 
                     && !selectedRoom.turn
                     && pawnType.guest.includes(selectedRoom.game_board[parsedData.movement.old]) 
                     && maxTime >= Date.now()
@@ -102,6 +102,30 @@ const OnMessage = async (parsedData,ws_request,mongoClient) => {
             //console.log("Movement Detected: "+selectedRoom[0].turn);
     
             break;
+            
+            case 't0':
+
+              const t0room = await mongoPull.Search(mongoClient,'rooms',{_id : parsedData.room_id} );
+
+
+              if(t0room && t0room.admin_session === ws_request.session.uuid && t0room.turn){
+                await mongoPull.Update(
+                  mongoClient, 
+                  'rooms',
+                  {_id : t0room._id},
+                  {$set : {turn : !t0room.turn, last_time: Date.now() } }, 
+                  {upsert: false}
+                  );
+
+              } else if(t0room && t0room.guest_session === ws_request.session.uuid && !t0room.turn ){
+                console.log('Guest ran out of time');
+
+              }
+
+              console.log('t0 sucess')
+
+
+              break;
         }
     
 

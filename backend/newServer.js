@@ -75,7 +75,8 @@ const mongoMonitor = async (pipeline) => {
 
     }
 
-    if(next.updateDescription.updatedFields.game_board){
+    //If a movement is made, update both players game
+    if(next.updateDescription.updatedFields.game_board || next.updateDescription.updatedFields.last_time ){
 
       const findRoom = await mongoPull.Search(mongoClient,'rooms',{_id: next.documentKey._id});
       console.log(findRoom)
@@ -83,13 +84,21 @@ const mongoMonitor = async (pipeline) => {
       for(const c of wsServer.clients){
         
         if(c.sess_id === findRoom.admin_session || c.sess_id === findRoom.guest_session){
-          c.send(JSON.stringify({action_type: 'movementResult',perm: c.sess_id === findRoom.admin_session ? true : false,game_board: findRoom.game_board, turn : findRoom.turn, last_time: findRoom.last_time}));
+          c.send(JSON.stringify({
+            action_type: 'movementResult',
+            perm: c.sess_id === findRoom.admin_session ? true : false,
+            game_board: findRoom.game_board, 
+            turn : findRoom.turn, 
+            turn_time: findRoom.turn_time, 
+            last_time: findRoom.last_time
+          }));
 
         }
       }
 
 
     }
+
 
     //console.log(next.documentKey._id) //Room code (5 char randomized)
     //console.log(next.updateDescription.updatedFields.guest_session) //Guest Session Key
