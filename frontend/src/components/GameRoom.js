@@ -146,12 +146,12 @@ export default class GameRoom extends Component {
 
 
             if(this.state.guest[0]){ //If guest
-            
-            props.gameData = [...this.state.gameBoard].reverse();
-
+        
+                props.gameData = [...this.state.gameBoard].reverse();
             } 
 
             if(!this.state.guest[0]){ //If not guest
+                
                 props.gameData = [...this.state.gameBoard];
             }
 

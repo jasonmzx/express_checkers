@@ -144,7 +144,7 @@ export default class CheckerBoard extends Component {
 
     componentDidUpdate(){
         console.log('changed?')
-        if(this.props.gameData != this.state.gameBoard){
+        if(this.props.gameData !== this.state.gameBoard){
             this.setState({gameBoard: this.props.gameData,dispOverlay : {}});
         }
     }

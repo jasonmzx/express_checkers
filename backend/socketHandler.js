@@ -38,6 +38,7 @@ const OnMessage = async (parsedData,ws_request,mongoClient) => {
               }
             socket.send('guest_fta_return');
             break;
+
           case 'movement':
     
             const pawnType = {
@@ -70,10 +71,12 @@ const OnMessage = async (parsedData,ws_request,mongoClient) => {
             }
     
     
+            const maxTime = selectedRoom.last_time + 1000*selectedRoom.turn_time
     
             if(ws_request.session.uuid == selectedRoom.admin_session 
               && selectedRoom.turn 
               && pawnType.admin.includes(selectedRoom.game_board[parsedData.movement.old])  
+              && maxTime >= Date.now()
             ){  //Admin
             console.log('VALIDATED ADMIN TURN');
             movementValid();
@@ -81,6 +84,7 @@ const OnMessage = async (parsedData,ws_request,mongoClient) => {
             } else if(ws_request.session.uuid == selectedRoom.guest_session 
                     && !selectedRoom.turn
                     && pawnType.guest.includes(selectedRoom.game_board[parsedData.movement.old]) 
+                    && maxTime >= Date.now()
             ){ //Guest
             console.log('VALIDATED GUEST TURN');
             movementValid();

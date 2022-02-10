@@ -11,6 +11,10 @@ const MovementTimer = (props) => {
         counter > 0 && setTimeout(() => setCounter(counter - 1), 1000);
       }, [counter]);
     
+    if(counter === 0){
+        console.log('OD9')
+    }
+
 
     return (
         <div>
