@@ -36,7 +36,7 @@ const OnMessage = async (parsedData,ws_request,mongoClient) => {
               if(findRoom != undefined){
               await mongoPull.Update(mongoClient,'rooms',{_id : findRoom._id }, { $set : { guest_session : ws_request.session.uuid , turn : true , last_time: Date.now()} }, {upsert: false});
               }
-            socket.send('guest_fta_return');
+            return 
             break;
 
           case 'movement':
@@ -65,7 +65,7 @@ const OnMessage = async (parsedData,ws_request,mongoClient) => {
                 mongoClient,
                 'rooms',
                 {_id : selectedRoom._id},
-                {$set : {game_board : newBoard, turn : !selectedRoom.turn } }, {upsert: false}
+                {$set : {game_board : newBoard, turn : !selectedRoom.turn, last_time: Date.now() } }, {upsert: false}
               );
     
             }
@@ -108,7 +108,8 @@ const OnMessage = async (parsedData,ws_request,mongoClient) => {
               const t0room = await mongoPull.Search(mongoClient,'rooms',{_id : parsedData.room_id} );
 
 
-              if(t0room && t0room.admin_session === ws_request.session.uuid && t0room.turn){
+              if(t0room && t0room.admin_session === ws_request.session.uuid && t0room.turn){ //Admin times up
+
                 await mongoPull.Update(
                   mongoClient, 
                   'rooms',
@@ -117,12 +118,19 @@ const OnMessage = async (parsedData,ws_request,mongoClient) => {
                   {upsert: false}
                   );
 
-              } else if(t0room && t0room.guest_session === ws_request.session.uuid && !t0room.turn ){
-                console.log('Guest ran out of time');
+              } else if(t0room && t0room.guest_session === ws_request.session.uuid && !t0room.turn ){ //Guest times up
+
+                await mongoPull.Update(
+                  mongoClient, 
+                  'rooms',
+                  {_id : t0room._id},
+                  {$set : {turn : !t0room.turn, last_time: Date.now() } }, 
+                  {upsert: false}
+                  );
+
 
               }
 
-              console.log('t0 sucess')
 
 
               break;

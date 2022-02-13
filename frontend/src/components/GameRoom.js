@@ -81,7 +81,7 @@ export default class GameRoom extends Component {
                 if(socketData.action_type === 'movementResult'){
                     console.log('RESULT : ');
                     console.log(socketData.turn);
-                    this.setState({gameBoard : socketData.game_board, turn: socketData.turn});
+                    this.setState({gameBoard : socketData.game_board, turn: socketData.turn, last_time: socketData.last_time});
                     //this.renderBoard();
                 }
 
