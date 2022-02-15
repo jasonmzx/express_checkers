@@ -76,13 +76,13 @@ const mongoMonitor = async (pipeline) => {
     }
 
     //If a movement is made, update both players game
+    //TODO: Harden this if
     if(next.updateDescription.updatedFields.game_board || next.updateDescription.updatedFields.last_time ){
 
       const findRoom = await mongoPull.Search(mongoClient,'rooms',{_id: next.documentKey._id});
-      console.log(findRoom)
 
       for(const c of wsServer.clients){
-        
+        console.log('[MovementResult sent to:'+c.sess_id+' ]')
         if(c.sess_id === findRoom.admin_session || c.sess_id === findRoom.guest_session){
           c.send(JSON.stringify({
             action_type: 'movementResult',
