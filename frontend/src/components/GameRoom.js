@@ -164,7 +164,9 @@ export default class GameRoom extends Component {
     };
 
     renderTimer = () => {
-        console.log('RE RENDER?????')
+        console.log('*** Timer RERENDER ***');
+        console.log(this.state.turn_time);
+        console.log(this.state.last_time);
 
         if(this.state.turn_time != null && this.state.last_time != null){
             const props = {

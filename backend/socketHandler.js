@@ -9,7 +9,8 @@ const OnMessage = async (parsedData,ws_request,mongoClient) => {
           case 'create_room':
             //Delete any previous rooms created by Host user: (admin user)
             mongoPull.Delete(mongoClient,'rooms', {admin_session: ws_request.session.uuid});
-    
+
+
             // DB ENTRY Structure:
             const insertData =  {                                   
               _id : gameFunction.IdGenerator(), //Insert Data into Collection [0]

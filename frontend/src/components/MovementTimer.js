@@ -23,13 +23,9 @@ const MovementTimer = (props) => {
     console.log(last_time);
 
     React.useEffect(() => {
-
-        counter > 0 && setTimeout(() => setCounter(
-            counter - 1
-        ), 1000); //Set this too Due time - last time / 1000 (for secs)
-
+        setCounter(Math.round( ((last_time+time*1000) - Date.now() )/1000 ))
         
-        if(counter === 0){
+        if( ((last_time+time*1000) - Date.now() )/1000 <= 0 ){
             const socketProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
     
             const socket = new WebSocket(socketProtocol+(window.location.href).split(':')[1]+':5000');
@@ -43,28 +39,16 @@ const MovementTimer = (props) => {
                 
     
             }
-            setCounter(Math.round( ((last_time+time*1000) - Date.now() )/1000 ))
+        } else {
+            counter > 0 && setTimeout(() => setCounter(
+                counter - 1
+            ), 1000); //Set this too Due time - last time / 1000 (for secs)
         }    
 
 
 
-      }, [counter]);
+      }, [counter,time, last_time]);
     
-    if(counter === 0){
-        const socketProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-
-        const socket = new WebSocket(socketProtocol+(window.location.href).split(':')[1]+':5000');
-
-        socket.onopen = async () => {
-            await socket.send(JSON.stringify({
-                query_type : 't0',
-                room_id: (window.location.pathname).slice(6)
-            }));
-            socket.close();
-            
-
-        }
-    }
 
 
     return (
